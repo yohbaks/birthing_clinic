@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Billing{% endblock %}
+{% block topbar_title %}Billing{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">Billing Records</div><div class="page-subtitle">Manage patient charges and payments</div></div>
+  <a href="{% url 'bill_add' %}" class="btn-rose"><i class="bi bi-plus"></i> New Bill</a>
+</div>
+<div class="panel mb-3">
+  <div class="panel-body" style="padding:14px 20px;">
+    <form method="get" class="d-flex gap-2 align-items-center">
+      <select name="status" class="form-select" style="max-width:160px;">
+        <option value="">All Status</option>
+        <option value="unpaid" {% if status_filter == "unpaid" %}selected{% endif %}>Unpaid</option>
+        <option value="partial" {% if status_filter == "partial" %}selected{% endif %}>Partial</option>
+        <option value="paid" {% if status_filter == "paid" %}selected{% endif %}>Paid</option>
+      </select>
+      <button type="submit" class="btn-rose"><i class="bi bi-search"></i> Filter</button>
+      <a href="{% url 'bill_list' %}" class="btn-outline-rose">Clear</a>
+    </form>
+  </div>
+</div>
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table dt-table mb-0">
+      <thead><tr><th>Bill No.</th><th>Patient</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for b in bills %}
+        <tr>
+          <td style="font-family:monospace;font-weight:700;color:#2ABFBF;font-size:12px;">{{ b.bill_number }}</td>
+          <td><a href="{% url 'patient_profile' b.patient.pk %}" style="font-weight:600;color:#1A2B4B;text-decoration:none;">{{ b.patient.full_name }}</a></td>
+          <td>{{ b.billing_date|date:"M d, Y" }}</td>
+          <td style="font-weight:700;">₱{{ b.total_amount|floatformat:2 }}</td>
+          <td style="color:#10B981;font-weight:600;">₱{{ b.amount_paid|floatformat:2 }}</td>
+          <td style="font-weight:700;{% if b.balance > 0 %}color:#EF4444;{% else %}color:#10B981;{% endif %}">₱{{ b.balance|floatformat:2 }}</td>
+          <td><span class="status-badge badge-{{ b.payment_status }}">{{ b.get_payment_status_display }}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'bill_detail' b.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a>
+              <a href="{% url 'print_receipt' b.pk %}" class="btn btn-sm btn-light" target="_blank"><i class="bi bi-printer"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No billing records found.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

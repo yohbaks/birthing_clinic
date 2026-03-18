@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Postpartum — {{ visit.patient.full_name }}{% endblock %}
+{% block topbar_title %}Postpartum Visit{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2">
+  <a href="{% url 'postpartum_list' %}">Postpartum</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i>
+  <span>{{ visit.patient.full_name }}</span>
+</div>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">{{ visit.get_visit_type_display }} — {{ visit.visit_date|date:"F j, Y" }}</div>
+    <div class="page-subtitle">{{ visit.patient.full_name }} · {{ visit.patient.record_number }}{% if visit.days_postpartum %} · Day {{ visit.days_postpartum }} postpartum{% endif %}</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'postpartum_edit' visit.pk %}" class="btn-outline-rose"><i class="bi bi-pencil"></i> Edit</a>
+    <a href="{% url 'postpartum_add' %}?patient={{ visit.patient.pk }}" class="btn-rose"><i class="bi bi-plus"></i> New Visit</a>
+  </div>
+</div>
+
+{% if visit.is_depression_risk %}
+<div style="background:rgba(239,68,68,.08);border:2px solid rgba(239,68,68,.3);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
+  <div style="font-size:32px;">⚠️</div>
+  <div>
+    <div style="font-weight:800;color:#DC2626;font-size:15px;">Postnatal Depression Risk — EPDS Score: {{ visit.mood_score }}/30</div>
+    <div style="font-size:13px;color:#7F1D1D;margin-top:2px;">Score ≥10 indicates possible postnatal depression. Patient should be referred for psychological assessment and support.</div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-8">
+
+    <!-- Vitals -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-heart-pulse"></i></div><h5>Vital Signs</h5></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+          {% for label,val in vitals %}
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;">
+            <div style="font-size:22px;font-weight:900;color:#1A2B4B;">{{ val }}</div>
+            <div style="font-size:11px;color:#94A3B8;">{{ label }}</div>
+          </div>
+          {% empty %}
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:900;color:#1A2B4B;">{{ visit.bp_display }}</div><div style="font-size:11px;color:#94A3B8;">Blood Pressure</div></div>
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:900;color:#1A2B4B;">{{ visit.temperature|default:"—" }}{% if visit.temperature %}°C{% endif %}</div><div style="font-size:11px;color:#94A3B8;">Temperature</div></div>
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:900;color:#1A2B4B;">{{ visit.weight|default:"—" }}{% if visit.weight %} kg{% endif %}</div><div style="font-size:11px;color:#94A3B8;">Weight</div></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Maternal Assessment -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6;"><i class="bi bi-clipboard2-pulse"></i></div><h5>Maternal Assessment</h5></div>
+      <div class="panel-body">
+        {% for label, val in assessment_fields %}
+        {% if val %}
+        <div style="display:flex;padding:8px 0;border-bottom:1px solid #F0F4F8;font-size:13px;">
+          <div style="width:200px;color:#94A3B8;font-weight:600;flex-shrink:0;">{{ label }}</div>
+          <div style="color:#1A2B4B;">{{ val }}</div>
+        </div>
+        {% endif %}
+        {% empty %}
+        {% if visit.uterine_involution %}<div style="display:flex;padding:8px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><div style="width:200px;color:#94A3B8;font-weight:600;">Uterine Involution</div><div>{{ visit.uterine_involution }}</div></div>{% endif %}
+        {% if visit.lochia %}<div style="display:flex;padding:8px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><div style="width:200px;color:#94A3B8;font-weight:600;">Lochia</div><div>{{ visit.lochia }}</div></div>{% endif %}
+        {% if visit.wound_status %}<div style="display:flex;padding:8px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><div style="width:200px;color:#94A3B8;font-weight:600;">Wound Status</div><div>{{ visit.wound_status }}</div></div>{% endif %}
+        {% if visit.breast_condition %}<div style="display:flex;padding:8px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><div style="width:200px;color:#94A3B8;font-weight:600;">Breast Condition</div><div>{{ visit.breast_condition }}</div></div>{% endif %}
+        <div style="display:flex;padding:8px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><div style="width:200px;color:#94A3B8;font-weight:600;">Breastfeeding</div><div>{{ visit.get_breastfeeding_display }}</div></div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- FP + Mental Health -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="panel h-100">
+          <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-shield-heart"></i></div><h5>Family Planning</h5></div>
+          <div class="panel-body">
+            <div style="font-size:13px;">
+              <div style="margin-bottom:8px;"><span style="color:#94A3B8;">Counseled:</span> <strong style="color:{% if visit.fp_counseled %}#10B981{% else %}#EF4444{% endif %};">{% if visit.fp_counseled %}Yes{% else %}No{% endif %}</strong></div>
+              <div style="margin-bottom:8px;"><span style="color:#94A3B8;">Method:</span> <strong>{{ visit.get_fp_method_chosen_display }}</strong></div>
+              <div><span style="color:#94A3B8;">Provided:</span> <strong style="color:{% if visit.fp_method_provided %}#10B981{% else %}#94A3B8{% endif %};">{% if visit.fp_method_provided %}Yes{% else %}No{% endif %}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="panel h-100" style="{% if visit.is_depression_risk %}border-top:3px solid #EF4444;{% endif %}">
+          <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-emoji-neutral"></i></div><h5>Mental Health (EPDS)</h5></div>
+          <div class="panel-body">
+            {% if visit.mood_score is not None %}
+            <div style="text-align:center;margin-bottom:12px;">
+              <div style="font-size:36px;font-weight:900;color:{% if visit.is_depression_risk %}#EF4444{% else %}#10B981{% endif %};">{{ visit.mood_score }}<span style="font-size:16px;color:#94A3B8;">/30</span></div>
+              <div style="font-size:12px;font-weight:700;color:{% if visit.is_depression_risk %}#EF4444{% else %}#10B981{% endif %};">{% if visit.is_depression_risk %}Possible Depression — Refer{% else %}Low Risk{% endif %}</div>
+            </div>
+            {% else %}
+            <div style="text-align:center;color:#94A3B8;font-size:13px;">EPDS not administered</div>
+            {% endif %}
+            {% if visit.mood_notes %}<div style="font-size:12px;color:#64748B;padding-top:8px;border-top:1px solid #F0F4F8;margin-top:8px;">{{ visit.mood_notes }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Newborn -->
+    {% if visit.newborn_condition or visit.newborn_weight %}
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-emoji-smile"></i></div><h5>Newborn Assessment</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          {% if visit.newborn_weight %}<div class="col-md-3"><div style="text-align:center;padding:12px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:900;color:#10B981;">{{ visit.newborn_weight }}g</div><div style="font-size:11px;color:#94A3B8;">Weight</div></div></div>{% endif %}
+          {% if visit.newborn_condition %}<div class="col-md-9"><div style="font-size:13px;"><span style="color:#94A3B8;">Condition: </span>{{ visit.newborn_condition }}</div>{% if visit.newborn_feeding %}<div style="font-size:13px;margin-top:6px;"><span style="color:#94A3B8;">Feeding: </span>{{ visit.newborn_feeding }}</div>{% endif %}</div>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Clinical Notes -->
+    {% if visit.assessment or visit.plan %}
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-journal-medical"></i></div><h5>Clinical Notes</h5></div>
+      <div class="panel-body">
+        {% if visit.chief_complaint %}<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:4px;">Chief Complaint</div><div style="font-size:13px;">{{ visit.chief_complaint }}</div></div>{% endif %}
+        {% if visit.assessment %}<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:4px;">Assessment</div><div style="font-size:13px;">{{ visit.assessment }}</div></div>{% endif %}
+        {% if visit.plan %}<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:4px;">Plan</div><div style="font-size:13px;">{{ visit.plan }}</div></div>{% endif %}
+        {% if visit.prescribed_medicines %}<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:4px;">Medicines</div><div style="font-size:13px;">{{ visit.prescribed_medicines }}</div></div>{% endif %}
+        {% if visit.referral %}<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:700;color:#EF4444;text-transform:uppercase;margin-bottom:4px;">Referral</div><div style="font-size:13px;font-weight:700;color:#EF4444;">{{ visit.referral }}</div></div>{% endif %}
+        {% if visit.follow_up_date %}<div><div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:4px;">Follow-up Date</div><div style="font-size:13px;font-weight:700;color:#2ABFBF;">{{ visit.follow_up_date|date:"F j, Y" }}</div></div>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Right sidebar: All visits for this patient -->
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-clock-history"></i></div><h5>All Postpartum Visits</h5></div>
+      <div>
+        {% for v in all_visits %}
+        <a href="{% url 'postpartum_detail' v.pk %}" style="display:block;padding:12px 16px;border-bottom:1px solid #F0F4F8;text-decoration:none;{% if v.pk == visit.pk %}background:rgba(232,82,122,.04);border-left:3px solid #E8527A;{% endif %}">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:700;font-size:13px;color:#1A2B4B;">{{ v.get_visit_type_display }}</div>
+              <div style="font-size:11px;color:#94A3B8;">{{ v.visit_date|date:"M d, Y" }}{% if v.days_postpartum %} · Day {{ v.days_postpartum }}{% endif %}</div>
+            </div>
+            {% if v.is_depression_risk %}<span style="font-size:10px;color:#EF4444;">⚠️ EPDS {{ v.mood_score }}</span>{% endif %}
+          </div>
+        </a>
+        {% empty %}
+        <div style="padding:20px;text-align:center;color:#94A3B8;font-size:13px;">No other visits</div>
+        {% endfor %}
+      </div>
+      <div style="padding:14px 16px;border-top:1px solid #F0F4F8;">
+        <a href="{% url 'patient_profile' visit.patient.pk %}" class="btn-outline-rose w-100" style="justify-content:center;font-size:12px;"><i class="bi bi-person me-1"></i>Patient Profile</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

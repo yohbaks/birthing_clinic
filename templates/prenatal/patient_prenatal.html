@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Prenatal History — {{ patient.full_name }}{% endblock %}
+{% block topbar_title %}Prenatal History{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'patient_list' %}">Patients</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <a href="{% url 'patient_profile' patient.pk %}">{{ patient.full_name }}</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>Prenatal History</span></div>
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">Prenatal History</div><div class="page-subtitle">{{ patient.full_name }} · {{ patient.record_number }}</div></div>
+  <a href="{% url 'prenatal_add' %}?patient={{ patient.pk }}" class="btn-rose"><i class="bi bi-plus"></i> New Visit</a>
+</div>
+<div class="panel">
+  <div class="panel-header"><div class="panel-icon"><i class="bi bi-activity"></i></div><h5>All Prenatal Visits ({{ visits|length }})</h5></div>
+  <div class="table-responsive">
+    <table class="table dt-table mb-0">
+      <thead><tr><th>Visit Date</th><th>GA (weeks)</th><th>Weight</th><th>BP</th><th>Temp</th><th>FHR</th><th>Fundal Height</th><th>Risk</th><th>Follow-up</th><th></th></tr></thead>
+      <tbody>
+        {% for v in visits %}
+        <tr>
+          <td style="font-weight:700;">{{ v.visit_date|date:"M d, Y" }}</td>
+          <td>{{ v.gestational_age_weeks }}w</td>
+          <td>{{ v.weight }} kg</td>
+          <td>{{ v.bp_display }} {% if v.is_bp_high %}<span style="color:#EF4444;font-size:10px;font-weight:700;">HIGH</span>{% endif %}</td>
+          <td>{{ v.temperature }}°C</td>
+          <td>{{ v.fetal_heart_rate|default:"—" }}</td>
+          <td>{{ v.fundal_height|default:"—" }} cm</td>
+          <td>{% if v.risk_flag == 'high_risk' %}<span class="status-badge badge-risk-high" style="font-size:10px;">High</span>{% elif v.risk_flag == 'borderline' %}<span class="status-badge badge-risk-mod" style="font-size:10px;">Border</span>{% else %}<span class="status-badge badge-risk-low" style="font-size:10px;">Normal</span>{% endif %}</td>
+          <td style="font-size:12px;">{{ v.follow_up_date|date:"M d, Y"|default:"—" }}</td>
+          <td><a href="{% url 'prenatal_detail' v.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a></td>
+        </tr>
+        {% empty %}<tr><td colspan="10" class="text-center text-muted py-4">No prenatal visits recorded.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const labels  = {{ chart_labels|safe }};
+const sys     = {{ chart_sys|safe }};
+const dia     = {{ chart_dia|safe }};
+const weights = {{ chart_weight|safe }};
+const ga      = {{ chart_ga|safe }};
+const fhr     = {{ chart_fhr|safe }};
+
+const gridColor = 'rgba(226,232,240,0.6)';
+const defOpts = { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{size:11} } } },
+  scales:{ x:{ grid:{color:gridColor}, ticks:{font:{size:10}} }, y:{ grid:{color:gridColor}, ticks:{font:{size:10}} } } };
+
+if (labels.length && document.getElementById('bpChart')) {
+  new Chart(document.getElementById('bpChart'), {
+    type:'line',
+    data:{ labels,
+      datasets:[
+        { label:'Systolic', data:sys,  borderColor:'#EF4444', backgroundColor:'rgba(239,68,68,.08)',  tension:.3, fill:false, pointRadius:4 },
+        { label:'Diastolic',data:dia,  borderColor:'#F59E0B', backgroundColor:'rgba(245,158,11,.08)', tension:.3, fill:false, pointRadius:4 },
+        { label:'High BP (140)', data:labels.map(()=>140), borderColor:'rgba(239,68,68,.3)', borderDash:[5,5], pointRadius:0 },
+      ]
+    }, options:{...defOpts, scales:{...defOpts.scales, y:{...defOpts.scales.y, min:60, suggestedMax:160}}}
+  });
+}
+if (labels.length && document.getElementById('weightChart')) {
+  new Chart(document.getElementById('weightChart'), {
+    type:'line',
+    data:{ labels,
+      datasets:[
+        { label:'Weight (kg)', data:weights, borderColor:'#2ABFBF', backgroundColor:'rgba(42,191,191,.08)', tension:.3, yAxisID:'yW', pointRadius:4 },
+        { label:'GA (wks)',    data:ga,      borderColor:'#8B5CF6', backgroundColor:'rgba(139,92,246,.08)', tension:.3, yAxisID:'yGA',pointRadius:4, borderDash:[4,2] },
+      ]
+    }, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } },
+      scales:{ x:{ grid:{color:gridColor} }, yW:{ type:'linear', position:'left', grid:{color:gridColor}, title:{display:true,text:'Weight kg'} },
+               yGA:{ type:'linear', position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'GA wks'} } } }
+  });
+}
+if (fhr.length && document.getElementById('fhrChart')) {
+  new Chart(document.getElementById('fhrChart'), {
+    type:'line',
+    data:{ labels,
+      datasets:[
+        { label:'FHR (bpm)', data:fhr, borderColor:'#10B981', backgroundColor:'rgba(16,185,129,.08)', tension:.3, pointRadius:4 },
+        { label:'Normal min (110)', data:labels.map(()=>110), borderColor:'rgba(245,158,11,.4)', borderDash:[5,5], pointRadius:0 },
+        { label:'Normal max (160)', data:labels.map(()=>160), borderColor:'rgba(239,68,68,.4)',  borderDash:[5,5], pointRadius:0 },
+      ]
+    }, options:{...defOpts, scales:{...defOpts.scales, y:{...defOpts.scales.y, min:80, suggestedMax:200}}}
+  });
+}
+</script>
+{% endblock %}

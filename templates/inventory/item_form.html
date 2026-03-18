@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}{% if item %}Edit{% else %}Add{% endif %} Item{% endblock %}
+{% block topbar_title %}Inventory Item{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><div class="page-title">{% if item %}Edit{% else %}Add{% endif %} Inventory Item</div></div></div>
+<form method="post">
+{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-box-seam"></i></div><h5>Item Details</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-8"><label class="form-label">Item Name *</label><input type="text" name="name" class="form-control" value="{{ item.name|default:'' }}" required></div>
+          <div class="col-md-4">
+            <label class="form-label">Unit *</label>
+            <select name="unit" class="form-select">
+              <option value="pc" {% if item.unit == "pc" %}selected{% endif %}>Piece</option>
+              <option value="box" {% if item.unit == "box" %}selected{% endif %}>Box</option>
+              <option value="vial" {% if item.unit == "vial" %}selected{% endif %}>Vial</option>
+              <option value="ampule" {% if item.unit == "ampule" %}selected{% endif %}>Ampule</option>
+              <option value="tablet" {% if item.unit == "tablet" %}selected{% endif %}>Tablet</option>
+              <option value="ml" {% if item.unit == "ml" %}selected{% endif %}>mL</option>
+              <option value="liter" {% if item.unit == "liter" %}selected{% endif %}>Liter</option>
+              <option value="pack" {% if item.unit == "pack" %}selected{% endif %}>Pack</option>
+              <option value="bottle" {% if item.unit == "bottle" %}selected{% endif %}>Bottle</option>
+              <option value="set" {% if item.unit == "set" %}selected{% endif %}>Set</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-select">
+              <option value="">Select Category</option>
+              {% for c in categories %}<option value="{{ c.pk }}" {% if item.category_id == c.pk %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3"><label class="form-label">Minimum Stock</label><input type="number" name="min_stock" step="0.01" class="form-control" value="{{ item.minimum_stock_level|default:'0' }}"></div>
+          <div class="col-md-3"><label class="form-label">Reorder Level</label><input type="number" name="reorder_level" step="0.01" class="form-control" value="{{ item.reorder_level|default:'0' }}"></div>
+          <div class="col-md-6"><label class="form-label">Cost Price (₱)</label><input type="number" name="cost_price" step="0.01" class="form-control" value="{{ item.cost_price|default:'0' }}"></div>
+          <div class="col-md-6"><label class="form-label">Selling Price (₱)</label><input type="number" name="selling_price" step="0.01" class="form-control" value="{{ item.selling_price|default:'0' }}"></div>
+          <div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="3">{{ item.description|default:'' }}</textarea></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-body">
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-check-circle"></i> Save Item</button>
+        <a href="{% url 'inventory_list' %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

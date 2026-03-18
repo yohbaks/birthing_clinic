@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Import Patients{% endblock %}
+{% block topbar_title %}Bulk Patient Import{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'patient_list' %}">Patients</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>Import CSV</span></div>
+<div class="page-header"><div class="page-header-left"><div class="page-title">Bulk Patient Import</div><div class="page-subtitle">Upload a CSV file to register multiple patients at once</div></div></div>
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-upload"></i></div><h5>Upload CSV File</h5></div>
+      <div class="panel-body">
+        <form method="post" enctype="multipart/form-data">{% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">CSV File *</label>
+            <input type="file" name="csv_file" accept=".csv" class="form-control" required>
+            <div style="font-size:11px;color:#94A3B8;margin-top:4px;">UTF-8 or UTF-8 BOM encoded CSV files</div>
+          </div>
+          <button type="submit" class="btn-rose" style="padding:10px 24px;"><i class="bi bi-upload"></i> Import Patients</button>
+        </form>
+      </div>
+    </div>
+    {% if results %}
+    <div class="panel" style="border-top:3px solid {% if results.errors %}#F59E0B{% else %}#10B981{% endif %};">
+      <div class="panel-body">
+        <div style="font-size:14px;font-weight:800;margin-bottom:10px;">Import Results</div>
+        <div class="row g-2 mb-2">
+          <div class="col-4" style="text-align:center;padding:12px;background:rgba(16,185,129,.08);border-radius:8px;"><div style="font-size:24px;font-weight:900;color:#10B981;">{{ results.created }}</div><div style="font-size:11px;color:#64748B;">Created</div></div>
+          <div class="col-4" style="text-align:center;padding:12px;background:rgba(100,116,139,.08);border-radius:8px;"><div style="font-size:24px;font-weight:900;color:#64748B;">{{ results.skipped }}</div><div style="font-size:11px;color:#64748B;">Skipped</div></div>
+          <div class="col-4" style="text-align:center;padding:12px;background:rgba(239,68,68,.08);border-radius:8px;"><div style="font-size:24px;font-weight:900;color:#EF4444;">{{ results.errors|length }}</div><div style="font-size:11px;color:#64748B;">Errors</div></div>
+        </div>
+        {% if results.errors %}
+        <div style="max-height:200px;overflow-y:auto;background:#FEF2F2;border-radius:8px;padding:10px;">
+          {% for err in results.errors %}<div style="font-size:12px;color:#EF4444;padding:2px 0;">{{ err }}</div>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-lg-5">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-table"></i></div><h5>Required CSV Format</h5></div>
+      <div class="panel-body">
+        <div style="font-size:12px;margin-bottom:12px;color:#64748B;">The CSV must have a header row. Required columns:</div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="padding:5px 8px;font-family:monospace;color:#E8527A;font-weight:700;">full_name</td><td style="padding:5px 4px;font-size:10px;color:#EF4444;">Required</td><td style="padding:5px 4px;color:#64748B;">Patient full name</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="padding:5px 8px;font-family:monospace;color:#E8527A;font-weight:700;">date_of_birth</td><td style="padding:5px 4px;font-size:10px;color:#EF4444;">Required</td><td style="padding:5px 4px;color:#64748B;">YYYY-MM-DD format</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="padding:5px 8px;font-family:monospace;color:#94A3B8;">civil_status</td><td style="padding:5px 4px;font-size:10px;color:#94A3B8;">Optional</td><td style="padding:5px 4px;color:#64748B;">single/married/widowed</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="padding:5px 8px;font-family:monospace;color:#94A3B8;">contact_number</td><td style="padding:5px 4px;font-size:10px;color:#94A3B8;">Optional</td><td style="padding:5px 4px;color:#64748B;">Phone number</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="padding:5px 8px;font-family:monospace;color:#94A3B8;">address</td><td style="padding:5px 4px;font-size:10px;color:#94A3B8;">Optional</td><td style="padding:5px 4px;color:#64748B;">Full address</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="padding:5px 8px;font-family:monospace;color:#94A3B8;">risk_level</td><td style="padding:5px 4px;font-size:10px;color:#94A3B8;">Optional</td><td style="padding:5px 4px;color:#64748B;">low / moderate / high</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="padding:5px 8px;font-family:monospace;color:#94A3B8;">gravida</td><td style="padding:5px 4px;font-size:10px;color:#94A3B8;">Optional</td><td style="padding:5px 4px;color:#64748B;">Number (G in G/P/A)</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="padding:5px 8px;font-family:monospace;color:#94A3B8;">blood_type</td><td style="padding:5px 4px;font-size:10px;color:#94A3B8;">Optional</td><td style="padding:5px 4px;color:#64748B;">A+/A-/B+/B-/AB+/O+/O-</td></tr>
+          <tr><td style="padding:5px 8px;font-family:monospace;color:#94A3B8;">allergies</td><td style="padding:5px 4px;font-size:10px;color:#94A3B8;">Optional</td><td style="padding:5px 4px;color:#64748B;">NKDA or list</td></tr>
+        </table>
+        <a href="/dashboard/export/patients/" class="btn-outline-rose mt-3" style="font-size:12px;padding:7px 14px;"><i class="bi bi-download"></i> Download Sample (existing patients)</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

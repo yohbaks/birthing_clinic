@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Expiry Report{% endblock %}
+{% block topbar_title %}Expiry Report{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><div class="page-title">Expiry Report</div><div class="page-subtitle">Near-expiry and expired items</div></div></div>
+{% if expired %}
+<div class="panel mb-3">
+  <div class="panel-header" style="background:rgba(239,68,68,.05);"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-x-circle"></i></div><h5 style="color:#DC2626;">Expired Items ({{ expired|length }})</h5></div>
+  <div class="table-responsive">
+    <table class="table mb-0" style="font-size:13px;">
+      <thead><tr><th>Item</th><th>Batch</th><th>Expiry Date</th><th>Quantity</th></tr></thead>
+      <tbody>{% for b in expired %}<tr style="background:rgba(239,68,68,.04);"><td style="font-weight:600;">{{ b.item.name }}</td><td>{{ b.batch_number|default:"—" }}</td><td style="color:#EF4444;font-weight:700;">{{ b.expiry_date|date:"M d, Y" }}</td><td>{{ b.quantity }}</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+<div class="panel">
+  <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-exclamation-triangle"></i></div><h5>Near-Expiry (Within 90 Days)</h5></div>
+  <div class="table-responsive">
+    <table class="table dt-table mb-0" style="font-size:13px;">
+      <thead><tr><th>Item</th><th>Category</th><th>Batch</th><th>Expiry Date</th><th>Quantity</th></tr></thead>
+      <tbody>{% for b in near_expiry %}<tr><td style="font-weight:600;">{{ b.item.name }}</td><td>{{ b.item.category.name|default:"—" }}</td><td>{{ b.batch_number|default:"—" }}</td><td style="color:#F59E0B;font-weight:700;">{{ b.expiry_date|date:"M d, Y" }}</td><td>{{ b.quantity }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No near-expiry items</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

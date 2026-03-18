@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Export Data{% endblock %}
+{% block topbar_title %}Data Export{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Data Export</div>
+    <div class="page-subtitle">Download clinic records as CSV for reporting and backup</div>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for label, model_type, icon, color, desc, has_daterange in exports %}
+  <div class="col-md-6 col-lg-4">
+    <div class="panel">
+      <div class="panel-body" style="padding:24px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+          <div style="width:46px;height:46px;border-radius:12px;background:{{ color }};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">{{ icon }}</div>
+          <div><div style="font-weight:800;font-size:15px;color:#1A2B4B;">{{ label }}</div><div style="font-size:12px;color:#94A3B8;">{{ desc }}</div></div>
+        </div>
+        <form method="get" action="{% url 'export_csv' model_type %}">
+          {% if has_daterange %}
+          <div class="row g-2 mb-3">
+            <div class="col-6"><label class="form-label" style="font-size:11px;">From</label><input type="date" name="from" class="form-control" style="font-size:12px;"></div>
+            <div class="col-6"><label class="form-label" style="font-size:11px;">To</label><input type="date" name="to" class="form-control" style="font-size:12px;"></div>
+          </div>
+          {% endif %}
+          <button type="submit" class="btn-outline-rose w-100" style="justify-content:center;font-size:13px;">
+            <i class="bi bi-download me-1"></i> Download CSV
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <!-- Hardcoded if context is empty (fallback) -->
+  <div class="col-md-6 col-lg-4">
+    <div class="panel"><div class="panel-body" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:46px;height:46px;border-radius:12px;background:rgba(232,82,122,.1);display:flex;align-items:center;justify-content:center;font-size:20px;">🤰</div>
+        <div><div style="font-weight:800;font-size:15px;">Patients</div><div style="font-size:12px;color:#94A3B8;">All registered patients</div></div>
+      </div>
+      <a href="{% url 'export_csv' 'patients' %}" class="btn-outline-rose w-100" style="justify-content:center;font-size:13px;"><i class="bi bi-download me-1"></i> Download CSV</a>
+    </div></div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="panel"><div class="panel-body" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:46px;height:46px;border-radius:12px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;font-size:20px;">💜</div>
+        <div><div style="font-weight:800;font-size:15px;">Deliveries</div><div style="font-size:12px;color:#94A3B8;">Filter by date range</div></div>
+      </div>
+      <form method="get" action="{% url 'export_csv' 'deliveries' %}">
+        <div class="row g-2 mb-3">
+          <div class="col-6"><input type="date" name="from" class="form-control" style="font-size:12px;" placeholder="From"></div>
+          <div class="col-6"><input type="date" name="to" class="form-control" style="font-size:12px;" placeholder="To"></div>
+        </div>
+        <button type="submit" class="btn-outline-rose w-100" style="justify-content:center;font-size:13px;"><i class="bi bi-download me-1"></i> Download CSV</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="panel"><div class="panel-body" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:46px;height:46px;border-radius:12px;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-size:20px;">👶</div>
+        <div><div style="font-weight:800;font-size:15px;">Newborns</div><div style="font-size:12px;color:#94A3B8;">Birth records with APGAR</div></div>
+      </div>
+      <form method="get" action="{% url 'export_csv' 'newborns' %}">
+        <div class="row g-2 mb-3">
+          <div class="col-6"><input type="date" name="from" class="form-control" style="font-size:12px;"></div>
+          <div class="col-6"><input type="date" name="to" class="form-control" style="font-size:12px;"></div>
+        </div>
+        <button type="submit" class="btn-outline-rose w-100" style="justify-content:center;font-size:13px;"><i class="bi bi-download me-1"></i> Download CSV</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="panel"><div class="panel-body" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:46px;height:46px;border-radius:12px;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;font-size:20px;">💰</div>
+        <div><div style="font-weight:800;font-size:15px;">Collections</div><div style="font-size:12px;color:#94A3B8;">Payment receipts</div></div>
+      </div>
+      <form method="get" action="{% url 'export_csv' 'collections' %}">
+        <div class="row g-2 mb-3">
+          <div class="col-6"><input type="date" name="from" class="form-control" style="font-size:12px;"></div>
+          <div class="col-6"><input type="date" name="to" class="form-control" style="font-size:12px;"></div>
+        </div>
+        <button type="submit" class="btn-outline-rose w-100" style="justify-content:center;font-size:13px;"><i class="bi bi-download me-1"></i> Download CSV</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="panel"><div class="panel-body" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:46px;height:46px;border-radius:12px;background:rgba(232,82,122,.08);display:flex;align-items:center;justify-content:center;font-size:20px;">📋</div>
+        <div><div style="font-weight:800;font-size:15px;">Prenatal Visits</div><div style="font-size:12px;color:#94A3B8;">All visit records</div></div>
+      </div>
+      <form method="get" action="{% url 'export_csv' 'prenatal' %}">
+        <div class="row g-2 mb-3">
+          <div class="col-6"><input type="date" name="from" class="form-control" style="font-size:12px;"></div>
+          <div class="col-6"><input type="date" name="to" class="form-control" style="font-size:12px;"></div>
+        </div>
+        <button type="submit" class="btn-outline-rose w-100" style="justify-content:center;font-size:13px;"><i class="bi bi-download me-1"></i> Download CSV</button>
+      </form>
+    </div></div>
+  </div>
+  {% endfor %}
+</div>
+
+<div style="margin-top:24px;padding:16px 20px;background:#F8FAFB;border-radius:12px;border:1px solid #E2E8F0;font-size:13px;color:#64748B;">
+  <i class="bi bi-info-circle me-2" style="color:#2ABFBF;"></i>
+  CSV files open in Excel, Google Sheets, and LibreOffice Calc. Use date filters to limit export size for large datasets.
+  Files are named <code>birthcare_[type]_[date].csv</code>.
+</div>
+{% endblock %}

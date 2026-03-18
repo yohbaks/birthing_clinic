@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Deactivate Patient{% endblock %}
+{% block topbar_title %}Deactivate Patient{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="panel" style="border-top:3px solid #EF4444;">
+      <div class="panel-body" style="text-align:center;padding:36px;">
+        <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+        <h4 style="font-weight:800;color:#1A2B4B;margin-bottom:8px;">Deactivate Patient?</h4>
+        <p style="font-size:14px;color:#64748B;margin-bottom:24px;">This will hide <strong>{{ patient.full_name }}</strong> ({{ patient.record_number }}) from active patient lists. All records will be preserved and the patient can be reactivated from Django Admin.</p>
+        <form method="post">{% csrf_token %}
+          <div class="d-flex gap-2 justify-content-center">
+            <button type="submit" style="background:#EF4444;color:#fff;border:none;padding:11px 24px;border-radius:9px;font-weight:700;cursor:pointer;"><i class="bi bi-person-x me-1"></i> Deactivate</button>
+            <a href="{% url 'patient_profile' patient.pk %}" class="btn-outline-rose" style="padding:10px 20px;">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

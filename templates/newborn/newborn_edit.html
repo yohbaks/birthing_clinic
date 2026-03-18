@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Edit Newborn — {{ newborn.baby_id }}{% endblock %}
+{% block topbar_title %}Edit Newborn Record{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2">
+  <a href="{% url 'newborn_list' %}">Newborns</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i>
+  <a href="{% url 'newborn_detail' newborn.pk %}">{{ newborn.baby_id }}</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i>
+  <span>Edit</span>
+</div>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Edit Newborn Record</div>
+    <div class="page-subtitle">{{ newborn.baby_id }} · Mother: {{ newborn.mother.full_name }}</div>
+  </div>
+</div>
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-emoji-smile"></i></div><h5>Newborn Details</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Baby Name</label><input type="text" name="baby_name" class="form-control" value="{{ newborn.baby_name }}"></div>
+          <div class="col-md-3">
+            <label class="form-label">Gender *</label>
+            <select name="gender" class="form-select">
+              <option value="male" {% if newborn.gender == "male" %}selected{% endif %}>Male</option>
+              <option value="female" {% if newborn.gender == "female" %}selected{% endif %}>Female</option>
+              <option value="indeterminate" {% if newborn.gender == "indeterminate" %}selected{% endif %}>Indeterminate</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Birth Status</label>
+            <select name="birth_status" class="form-select">
+              <option value="alive" {% if newborn.birth_status == "alive" %}selected{% endif %}>Alive</option>
+              <option value="stillbirth" {% if newborn.birth_status == "stillbirth" %}selected{% endif %}>Stillbirth</option>
+              <option value="neonatal_death" {% if newborn.birth_status == "neonatal_death" %}selected{% endif %}>Neonatal Death</option>
+            </select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Birth Date & Time *</label><input type="datetime-local" name="birth_datetime" class="form-control" value="{{ newborn.birth_datetime|date:'Y-m-d\TH:i' }}" required></div>
+          <div class="col-md-3"><label class="form-label">Weight (grams) *</label><input type="number" name="weight_grams" class="form-control" value="{{ newborn.weight_grams }}" required></div>
+          <div class="col-md-3"><label class="form-label">Length (cm) *</label><input type="number" name="length_cm" step="0.1" class="form-control" value="{{ newborn.length_cm }}" required></div>
+          <div class="col-md-3"><label class="form-label">Head Circ. (cm)</label><input type="number" name="head_circumference" step="0.1" class="form-control" value="{{ newborn.head_circumference_cm|default:'' }}"></div>
+          <div class="col-md-3"><label class="form-label">APGAR 1 min</label><input type="number" name="apgar_1min" min="0" max="10" class="form-control" value="{{ newborn.apgar_1min|default:'' }}"></div>
+          <div class="col-md-3"><label class="form-label">APGAR 5 min</label><input type="number" name="apgar_5min" min="0" max="10" class="form-control" value="{{ newborn.apgar_5min|default:'' }}"></div>
+          <div class="col-12">
+            <label class="form-label">Interventions</label>
+            <div class="d-flex gap-4 flex-wrap">
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" name="vitamin_k_given" {% if newborn.vitamin_k_given %}checked{% endif %}> Vitamin K Given</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" name="eye_prophylaxis_given" {% if newborn.eye_prophylaxis_given %}checked{% endif %}> Eye Prophylaxis</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" name="newborn_screening_done" {% if newborn.newborn_screening_done %}checked{% endif %}> Newborn Screening</label>
+            </div>
+          </div>
+          <div class="col-12"><label class="form-label">Initial Diagnosis</label><textarea name="initial_diagnosis" class="form-control" rows="2">{{ newborn.initial_diagnosis }}</textarea></div>
+          <div class="col-12"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2">{{ newborn.notes }}</textarea></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-body">
+        <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:#92400E;">
+          <i class="bi bi-exclamation-triangle me-1"></i> Baby ID <strong>{{ newborn.baby_id }}</strong> and mother linkage cannot be changed here.
+        </div>
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-check-circle"></i> Save Changes</button>
+        <a href="{% url 'newborn_detail' newborn.pk %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

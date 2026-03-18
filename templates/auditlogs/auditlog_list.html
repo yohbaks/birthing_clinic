@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Audit Logs{% endblock %}
+{% block topbar_title %}Audit Trail{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">Audit Trail</div><div class="page-subtitle">All system activity logs — showing up to 500 records</div></div>
+</div>
+<!-- FILTER BAR -->
+<div class="panel mb-3">
+  <div class="panel-body" style="padding:14px 20px;">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label">Action</label>
+        <select name="action" class="form-select" style="font-size:13px;">
+          <option value="">All Actions</option>
+          {% for a in all_actions %}<option value="{{ a }}" {% if a == action_filter %}selected{% endif %}>{{ a|title }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Module</label>
+        <select name="module" class="form-select" style="font-size:13px;">
+          <option value="">All Modules</option>
+          {% for m in all_modules %}<option value="{{ m }}" {% if m == module_filter %}selected{% endif %}>{{ m }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><label class="form-label">User</label><input type="text" name="user" class="form-control" value="{{ user_filter }}" placeholder="Username..."></div>
+      <div class="col-md-2"><label class="form-label">Date From</label><input type="date" name="date_from" class="form-control" value="{{ date_from }}"></div>
+      <div class="col-md-2"><label class="form-label">Date To</label><input type="date" name="date_to" class="form-control" value="{{ date_to }}"></div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn-rose" style="flex:1;justify-content:center;"><i class="bi bi-search"></i></button>
+        <a href="{% url 'auditlog_list' %}" class="btn-outline-rose" style="padding:9px 12px;">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table dt-table mb-0" style="font-size:12.5px;">
+      <thead>
+        <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Module</th><th>Record</th><th>Description</th><th>IP</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="white-space:nowrap;font-size:11.5px;">{{ log.timestamp|date:"M d, Y" }}<br><span style="color:#94A3B8;">{{ log.timestamp|time:"H:i:s" }}</span></td>
+          <td style="font-weight:600;font-size:12.5px;">{{ log.user.username|default:"System" }}</td>
+          <td>
+            {% if log.action == "create" %}<span class="status-badge badge-completed" style="font-size:10px;">CREATE</span>
+            {% elif log.action == "update" %}<span class="status-badge badge-partial" style="font-size:10px;">UPDATE</span>
+            {% elif log.action == "delete" %}<span class="status-badge badge-unpaid" style="font-size:10px;">DELETE</span>
+            {% elif log.action == "login" %}<span class="status-badge badge-confirmed" style="font-size:10px;">LOGIN</span>
+            {% elif log.action == "logout" %}<span class="status-badge badge-pending" style="font-size:10px;">LOGOUT</span>
+            {% else %}<span style="font-size:10px;background:#F0F4F8;color:#64748B;padding:2px 8px;border-radius:8px;font-weight:700;">{{ log.action|upper }}</span>{% endif %}
+          </td>
+          <td><span style="font-size:11px;background:rgba(42,191,191,.1);color:#0F766E;padding:2px 8px;border-radius:6px;font-weight:600;">{{ log.module }}</span></td>
+          <td style="font-family:monospace;font-size:11px;color:#64748B;">{{ log.record_id }}</td>
+          <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#475569;">{{ log.description }}</td>
+          <td style="font-family:monospace;font-size:11px;color:#94A3B8;">{{ log.ip_address|default:"—" }}</td>
+          <td>{% if log.action == "update" %}<a href="{% url 'auditlog_detail' log.pk %}" class="btn btn-sm btn-light" title="View diff"><i class="bi bi-eye"></i></a>{% endif %}</td>
+        </tr>
+        {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No audit logs found.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

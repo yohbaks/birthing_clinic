@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Patient — BirthCare{% endblock %}
+{% block topbar_title %}{{ action }} Patient{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-breadcrumb">
+      <a href="{% url 'patient_list' %}">Patients</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+      <span>{{ action }} Patient</span>
+    </div>
+    <div class="page-title">{{ action }} Patient Record</div>
+  </div>
+</div>
+<form method="post">
+{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="bi bi-person"></i></div>
+        <h5>Personal Information</h5>
+      </div>
+      <div class="panel-body">
+        <div class="form-section-title">Basic Details</div>
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label">Full Name <span style="color:#E8527A">*</span></label>
+            <input type="text" name="full_name" class="form-control" value="{{ patient.full_name|default:'' }}" required placeholder="Last Name, First Name Middle Name">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Date of Birth <span style="color:#E8527A">*</span></label>
+            <input type="date" name="date_of_birth" class="form-control" value="{{ patient.date_of_birth|date:'Y-m-d'|default:'' }}" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Civil Status</label>
+            <select name="civil_status" class="form-select">
+              <option value="single" {% if patient.civil_status == 'single' %}selected{% endif %}>Single</option>
+              <option value="married" {% if patient.civil_status == 'married' %}selected{% endif %}>Married</option>
+              <option value="widowed" {% if patient.civil_status == 'widowed' %}selected{% endif %}>Widowed</option>
+              <option value="separated" {% if patient.civil_status == 'separated' %}selected{% endif %}>Separated</option>
+              <option value="live_in" {% if patient.civil_status == 'live_in' %}selected{% endif %}>Live-in</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Blood Type</label>
+            <select name="blood_type" class="form-select">
+              <option value="">Unknown</option>
+              <option value="A+" {% if patient.blood_type == 'A+' %}selected{% endif %}>A+</option>
+              <option value="A-" {% if patient.blood_type == 'A-' %}selected{% endif %}>A-</option>
+              <option value="B+" {% if patient.blood_type == 'B+' %}selected{% endif %}>B+</option>
+              <option value="B-" {% if patient.blood_type == 'B-' %}selected{% endif %}>B-</option>
+              <option value="AB+" {% if patient.blood_type == 'AB+' %}selected{% endif %}>AB+</option>
+              <option value="AB-" {% if patient.blood_type == 'AB-' %}selected{% endif %}>AB-</option>
+              <option value="O+" {% if patient.blood_type == 'O+' %}selected{% endif %}>O+</option>
+              <option value="O-" {% if patient.blood_type == 'O-' %}selected{% endif %}>O-</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Risk Level</label>
+            <select name="risk_level" class="form-select">
+              <option value="low" {% if patient.risk_level == 'low' %}selected{% endif %}>Low Risk</option>
+              <option value="moderate" {% if patient.risk_level == 'moderate' %}selected{% endif %}>Moderate Risk</option>
+              <option value="high" {% if patient.risk_level == 'high' %}selected{% endif %}>High Risk</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Contact Number <span style="color:#E8527A">*</span></label>
+            <input type="text" name="contact_number" class="form-control" value="{{ patient.contact_number|default:'' }}" required placeholder="09XX-XXX-XXXX">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Partner / Husband Name</label>
+            <input type="text" name="partner_name" class="form-control" value="{{ patient.partner_name|default:'' }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Address <span style="color:#E8527A">*</span></label>
+            <textarea name="address" class="form-control" rows="2" required placeholder="Complete address including barangay, municipality, province">{{ patient.address|default:'' }}</textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Allergies</label>
+            <input type="text" name="allergies" class="form-control" value="{{ patient.allergies|default:'' }}" placeholder="NKDA or list allergies">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Existing Medical Conditions</label>
+            <input type="text" name="existing_conditions" class="form-control" value="{{ patient.existing_conditions|default:'' }}" placeholder="None or list conditions">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6;"><i class="bi bi-activity"></i></div>
+        <h5>Obstetric History</h5>
+      </div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Gravida (G)</label>
+            <input type="number" name="gravida" class="form-control" value="{{ patient.gravida|default:'0' }}" min="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Para (P)</label>
+            <input type="number" name="para" class="form-control" value="{{ patient.para|default:'0' }}" min="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Abortion (A)</label>
+            <input type="number" name="abortion_history" class="form-control" value="{{ patient.abortion_history|default:'0' }}" min="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">LMP</label>
+            <input type="date" id="lmp-input" name="lmp" class="form-control" value="{{ patient.lmp|date:'Y-m-d'|default:'' }}">
+            <small id="ga-display" style="color:#2ABFBF;font-weight:600;font-size:12px;display:block;margin-top:3px;"></small>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Expected Date of Delivery
+              <span style="font-size:10px;color:#2ABFBF;font-weight:600;" id="edd-auto-label">(auto-calculated)</span>
+            </label>
+            <input type="date" id="edd-input" name="edd" class="form-control" value="{{ patient.edd|date:'Y-m-d'|default:'' }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="Additional notes...">{{ patient.notes|default:'' }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    {% if not patient %}
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-telephone-forward"></i></div>
+        <h5>Emergency Contact</h5>
+      </div>
+      <div class="panel-body">
+        <div class="mb-3">
+          <label class="form-label">Contact Person</label>
+          <input type="text" name="ec_name" class="form-control" placeholder="Full name">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Relationship</label>
+          <input type="text" name="ec_relationship" class="form-control" placeholder="e.g. Husband, Mother">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contact Number</label>
+          <input type="text" name="ec_contact" class="form-control" placeholder="09XX-XXX-XXXX">
+        </div>
+        <div class="mb-0">
+          <label class="form-label">Address</label>
+          <textarea name="ec_address" class="form-control" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="panel">
+      <div class="panel-body">
+        <div style="font-size:12px;color:#94A3B8;margin-bottom:16px;line-height:1.6;">
+          All patient records are stored securely and are protected by role-based access control. Only authorized staff can view sensitive information.
+        </div>
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;">
+          <i class="bi bi-check-circle"></i> {{ action }} Patient Record
+        </button>
+        <a href="{% url 'patient_list' %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function lmpToEDD(lmpStr) {
+  if (!lmpStr) return '';
+  const d = new Date(lmpStr + 'T00:00:00');
+  d.setDate(d.getDate() + 280);
+  return d.toISOString().split('T')[0];
+}
+function calcGA(lmpStr) {
+  if (!lmpStr) return '';
+  const lmp = new Date(lmpStr + 'T00:00:00');
+  const today = new Date();
+  const diffMs = today - lmp;
+  if (diffMs < 0) return '';
+  const weeks = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
+  const days  = Math.floor((diffMs % (1000 * 60 * 60 * 24 * 7)) / (1000 * 60 * 60 * 24));
+  if (weeks > 45) return '';
+  return weeks + 'w ' + days + 'd';
+}
+document.addEventListener('DOMContentLoaded', function() {
+  // ── Duplicate name warning ──────────────────────────────────
+  const nameInput = document.querySelector('input[name="full_name"]');
+  const dupWarning = document.createElement('div');
+  dupWarning.id = 'dup-warning';
+  dupWarning.style.cssText = 'display:none;margin-top:6px;padding:10px 14px;background:rgba(245,158,11,.08);border:1.5px solid rgba(245,158,11,.3);border-radius:8px;font-size:12px;color:#92400E;';
+  if (nameInput) nameInput.parentNode.appendChild(dupWarning);
+
+  let dupTimer;
+  if (nameInput) {
+    nameInput.addEventListener('input', function() {
+      clearTimeout(dupTimer);
+      const val = this.value.trim();
+      if (val.length < 3) { dupWarning.style.display = 'none'; return; }
+      dupTimer = setTimeout(() => {
+        fetch('/patients/check-duplicate/?name=' + encodeURIComponent(val))
+          .then(r => r.json())
+          .then(data => {
+            if (data.duplicates && data.duplicates.length > 0) {
+              const icon = data.has_exact ? '⚠️' : '🔍';
+              const title = data.has_exact
+                ? '<strong>Possible duplicate:</strong> A patient with this exact name already exists.'
+                : '<strong>Similar patients found:</strong>';
+              const list = data.duplicates.map(d =>
+                `<a href="/patients/${d.pk}/" target="_blank" style="display:block;margin-top:4px;color:#92400E;font-weight:700;">${d.full_name} — ${d.record_number} (DOB: ${d.date_of_birth || '—'})</a>`
+              ).join('');
+              dupWarning.innerHTML = `${icon} ${title}${list}<div style="margin-top:6px;font-size:11px;color:#B45309;">Please verify this is a new patient before saving.</div>`;
+              dupWarning.style.display = 'block';
+            } else {
+              dupWarning.style.display = 'none';
+            }
+          }).catch(() => {});
+      }, 600);
+    });
+  }
+
+  // ── LMP → EDD ──────────────────────────────────────────────
+  const lmpInput = document.getElementById('lmp-input');
+  const eddInput = document.getElementById('edd-input');
+  const gaDisplay = document.getElementById('ga-display');
+  if (!lmpInput) return;
+  function update() {
+    const lmp = lmpInput.value;
+    if (lmp) {
+      const edd = lmpToEDD(lmp);
+      if (edd && eddInput && !eddInput.dataset.userEdited) {
+        eddInput.value = edd;
+      }
+      if (gaDisplay) {
+        const ga = calcGA(lmp);
+        gaDisplay.textContent = ga ? 'GA: ' + ga : '';
+      }
+    }
+  }
+  lmpInput.addEventListener('change', update);
+  if (eddInput) eddInput.addEventListener('input', () => { eddInput.dataset.userEdited = '1'; });
+  update();
+});
+</script>
+{% endblock %}

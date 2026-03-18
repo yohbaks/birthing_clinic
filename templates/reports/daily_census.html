@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Daily Census{% endblock %}
+{% block topbar_title %}Daily Patient Census{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">Daily Patient Census</div><div class="page-subtitle">{{ target_date|date:"F j, Y" }}</div></div>
+</div>
+<div class="panel mb-3">
+  <div class="panel-body" style="padding:14px 20px;">
+    <form method="get" class="d-flex gap-2">
+      <input type="date" name="date" value="{{ target_date|date:'Y-m-d' }}" class="form-control" style="max-width:200px;">
+      <button type="submit" class="btn-rose"><i class="bi bi-search"></i> View</button>
+    </form>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-calendar-check"></i></div><h5>Appointments ({{ appointments|length }})</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead><tr><th>Time</th><th>Patient</th><th>Type</th><th>Status</th></tr></thead>
+          <tbody>{% for a in appointments %}<tr><td>{{ a.time|time:"h:i A" }}</td><td style="font-weight:600;">{{ a.patient.full_name }}</td><td>{{ a.get_appointment_type_display }}</td><td><span class="status-badge badge-{{ a.status }}">{{ a.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No appointments</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-activity"></i></div><h5>Prenatal Visits ({{ prenatal|length }})</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead><tr><th>Patient</th><th>GA</th><th>BP</th><th>Weight</th></tr></thead>
+          <tbody>{% for v in prenatal %}<tr><td style="font-weight:600;">{{ v.patient.full_name }}</td><td>{{ v.gestational_age_weeks }}w</td><td>{{ v.bp_display }}</td><td>{{ v.weight }} kg</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No prenatal visits</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

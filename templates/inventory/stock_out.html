@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Stock Out{% endblock %}
+{% block topbar_title %}Stock Out{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><div class="page-title">Record Stock Out</div></div></div>
+<form method="post">
+{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-arrow-up-circle"></i></div><h5>Stock Out Details</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label">Item *</label>
+            <select name="item" class="form-select" required>
+              <option value="">Select Item</option>
+              {% for i in items %}<option value="{{ i.pk }}">{{ i.name }} — {{ i.quantity_on_hand }} {{ i.get_unit_display }} available</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Quantity *</label><input type="number" name="quantity" step="0.01" class="form-control" required min="0.01"></div>
+          <div class="col-md-6"><label class="form-label">Reference</label><input type="text" name="reference" class="form-control" placeholder="Patient name, record no..."></div>
+          <div class="col-12"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+          <div class="col-12"><button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-arrow-up-circle"></i> Record Stock Out</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Clinic Settings{% endblock %}
+{% block topbar_title %}Clinic Settings{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Clinic Settings</div>
+    <div class="page-subtitle">Configure clinic information used in PDFs and reports</div>
+  </div>
+</div>
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+  <!-- LEFT: Clinic Identity -->
+  <div class="col-lg-7">
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(232,82,122,.1);color:#E8527A;"><i class="bi bi-hospital"></i></div>
+        <h5>Clinic Identity</h5>
+      </div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label">Clinic Name *</label>
+            <input type="text" name="clinic_name" class="form-control" value="{{ settings.clinic_name }}" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Logo / Emoji</label>
+            <input type="text" name="logo_url" class="form-control" value="{{ settings.logo_url }}" placeholder="🌸 or URL">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Tagline</label>
+            <input type="text" name="clinic_tagline" class="form-control" value="{{ settings.clinic_tagline }}" placeholder="e.g. Maternity & Newborn Care Services">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Address</label>
+            <textarea name="address" class="form-control" rows="2" placeholder="Complete clinic address">{{ settings.address }}</textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Contact Number</label>
+            <input type="text" name="contact_number" class="form-control" value="{{ settings.contact_number }}" placeholder="(053) XXX-XXXX">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ settings.email }}" placeholder="clinic@email.com">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-card-list"></i></div>
+        <h5>License & Accreditation</h5>
+      </div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">PhilHealth Accreditation No.</label>
+            <input type="text" name="philhealth_accno" class="form-control" value="{{ settings.philhealth_accno }}" placeholder="PH-XXXXXX">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">DOH License No.</label>
+            <input type="text" name="doh_license" class="form-control" value="{{ settings.doh_license }}" placeholder="DOH-XXXXXX">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Head Physician / Medical Director</label>
+            <input type="text" name="head_physician" class="form-control" value="{{ settings.head_physician }}" placeholder="Dr. Full Name, MD">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Head Midwife / Chief Nurse</label>
+            <input type="text" name="head_midwife" class="form-control" value="{{ settings.head_midwife }}" placeholder="Full Name, RM">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-cash-coin"></i></div>
+        <h5>Default Billing Rates</h5>
+      </div>
+      <div class="panel-body">
+        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:#92400E;">
+          <i class="bi bi-info-circle me-1"></i> These are default amounts pre-filled when generating a bill from a delivery. Staff can still edit each bill individually.
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Default Delivery Fee (₱)</label>
+            <input type="number" name="default_delivery_fee" class="form-control" value="{{ settings.default_delivery_fee }}" step="0.01" min="0">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Default Room Rate per Night (₱)</label>
+            <input type="number" name="default_room_rate" class="form-control" value="{{ settings.default_room_rate }}" step="0.01" min="0">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Preview + Save -->
+  <div class="col-lg-5">
+    <!-- PDF Preview -->
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+        <h5>PDF Header Preview</h5>
+      </div>
+      <div class="panel-body">
+        <div style="background:#F8FAFB;border-radius:10px;padding:20px;text-align:center;border:1px solid #E2E8F0;">
+          <div style="font-size:28px;margin-bottom:4px;">{{ settings.logo_url }}</div>
+          <div style="font-size:18px;font-weight:900;color:#E8527A;">{{ settings.clinic_name }}</div>
+          <div style="font-size:12px;color:#64748B;margin-top:2px;">{{ settings.clinic_tagline }}</div>
+          {% if settings.address %}
+          <div style="font-size:11px;color:#94A3B8;margin-top:6px;">{{ settings.address }}</div>
+          {% endif %}
+          {% if settings.contact_number or settings.email %}
+          <div style="font-size:11px;color:#94A3B8;margin-top:3px;">
+            {% if settings.contact_number %}{{ settings.contact_number }}{% endif %}
+            {% if settings.contact_number and settings.email %} · {% endif %}
+            {% if settings.email %}{{ settings.email }}{% endif %}
+          </div>
+          {% endif %}
+          {% if settings.philhealth_accno or settings.doh_license %}
+          <div style="font-size:10px;color:#94A3B8;margin-top:4px;">
+            {% if settings.philhealth_accno %}PhilHealth: {{ settings.philhealth_accno }}{% endif %}
+            {% if settings.philhealth_accno and settings.doh_license %} · {% endif %}
+            {% if settings.doh_license %}DOH: {{ settings.doh_license }}{% endif %}
+          </div>
+          {% endif %}
+          <div style="border-top:2px solid #E8527A;margin:12px 0;"></div>
+          <div style="font-size:11px;color:#64748B;font-style:italic;">SAMPLE DOCUMENT HEADER</div>
+        </div>
+        <div style="font-size:12px;color:#94A3B8;margin-top:10px;text-align:center;">This header appears on all generated PDFs</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-body">
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-check-circle"></i> Save Clinic Settings</button>
+        <div style="margin-top:16px;padding:14px;background:#F8FAFB;border-radius:10px;font-size:12px;color:#64748B;">
+          <strong>Settings affect:</strong>
+          <ul style="margin:8px 0 0 16px;padding:0;line-height:1.8;">
+            <li>All generated PDF letterheads</li>
+            <li>Default billing amounts</li>
+            <li>Report signatures</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

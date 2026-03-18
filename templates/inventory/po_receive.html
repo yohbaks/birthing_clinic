@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Receive PO{% endblock %}
+{% block topbar_title %}Receive Purchase Order{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'po_list' %}">Purchase Orders</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><a href="{% url 'po_detail' po.pk %}">{{ po.po_number }}</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>Receive</span></div>
+<div class="page-header"><div class="page-header-left"><div class="page-title">Receive Items — {{ po.po_number }}</div><div class="page-subtitle">{{ po.supplier.name }} · Ordered {{ po.order_date|date:"M d, Y" }}</div></div></div>
+<form method="post">{% csrf_token %}
+<div class="panel mb-3">
+  <div class="panel-header"><div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-box-arrow-in-down"></i></div><h5>Receiving Items</h5></div>
+  <div style="overflow-x:auto;">
+    <table class="table mb-0" style="font-size:13px;">
+      <thead><tr><th>Item</th><th>Ordered</th><th>Qty Received</th><th>Batch No.</th><th>Expiry Date</th></tr></thead>
+      <tbody>
+        {% for pi in po_items %}
+        <tr style="{% cycle 'background:#FAFBFC;' '' %}">
+          <td style="font-weight:600;">{{ pi.inventory_item.name }}<br><span style="font-size:11px;color:#2ABFBF;font-family:monospace;">{{ pi.inventory_item.item_code }}</span></td>
+          <td style="font-weight:700;">{{ pi.quantity_ordered }} {{ pi.inventory_item.get_unit_display }}</td>
+          <td><input type="number" name="qty_received_{{ pi.pk }}" class="form-control" style="max-width:100px;" value="{{ pi.quantity_ordered }}" step="0.01" min="0"></td>
+          <td><input type="text" name="batch_{{ pi.pk }}" class="form-control" style="max-width:140px;" placeholder="Batch #"></td>
+          <td><input type="date" name="expiry_{{ pi.pk }}" class="form-control" style="max-width:150px;"></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="d-flex gap-2">
+  <button type="submit" class="btn-teal" style="padding:11px 24px;"><i class="bi bi-check-circle"></i> Confirm Receipt & Update Stock</button>
+  <a href="{% url 'po_detail' po.pk %}" class="btn-outline-rose" style="padding:11px 20px;">Cancel</a>
+</div>
+</form>
+{% endblock %}

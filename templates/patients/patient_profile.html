@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% block title %}{{ patient.full_name }} — BirthCare{% endblock %}
+{% block topbar_title %}Patient Profile{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'patient_list' %}">Patients</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>{{ patient.full_name }}</span></div>
+<div class="patient-profile-header mb-3">
+  <div class="d-flex align-items-center gap-4">
+    <div class="patient-avatar-lg">{{ patient.full_name|first|upper }}</div>
+    <div style="flex:1;">
+      <div style="font-size:22px;font-weight:800;line-height:1.2;">{{ patient.full_name }}</div>
+      <div style="color:rgba(255,255,255,.65);font-size:13px;margin-top:4px;">{{ patient.record_number }} · Age {{ patient.age }} · {{ patient.get_civil_status_display }}{% if patient.blood_type %} · Blood Type {{ patient.blood_type }}{% endif %}</div>
+      <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
+        <div style="font-size:12px;color:rgba(255,255,255,.5);">Contact</div><div style="font-size:13px;font-weight:600;">{{ patient.contact_number }}</div>
+        {% if patient.edd %}<div style="font-size:12px;color:rgba(255,255,255,.5);">EDD</div><div style="font-size:13px;font-weight:600;">{{ patient.edd|date:"M d, Y" }}</div>{% endif %}
+        <div style="font-size:12px;color:rgba(255,255,255,.5);">OB History</div><div style="font-size:13px;font-weight:700;">G{{ patient.gravida }} P{{ patient.para }} A{{ patient.abortion_history }}</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+      {% if patient.risk_level == "high" %}<span style="background:rgba(239,68,68,.25);color:#FCA5A5;border:1px solid rgba(239,68,68,.4);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:800;text-transform:uppercase;">⚠ HIGH RISK</span>
+      {% elif patient.risk_level == "moderate" %}<span style="background:rgba(245,158,11,.2);color:#FCD34D;border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;">MODERATE RISK</span>
+      {% else %}<span style="background:rgba(16,185,129,.2);color:#6EE7B7;border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;">LOW RISK</span>{% endif %}
+      <a href="{% url 'pdf_patient' patient.pk %}" target="_blank" style="background:rgba(232,82,122,.25);color:#fff;border:1px solid rgba(232,82,122,.5);border-radius:9px;padding:7px 16px;font-size:12px;font-weight:600;text-decoration:none;margin-bottom:6px;display:block;text-align:center;"><i class="bi bi-file-earmark-pdf"></i> Export PDF</a>
+      <a href="{% url 'patient_edit' patient.pk %}" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:7px 16px;font-size:12px;font-weight:600;text-decoration:none;"><i class="bi bi-pencil"></i> Edit</a>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-2 mb-3">
+  <div class="col-4 col-md-2"><a href="{% url 'prenatal_add' %}?patient={{ patient.pk }}" class="quick-action"><i class="bi bi-activity" style="color:#E8527A;"></i>New Prenatal</a></div>
+  <div class="col-4 col-md-2"><a href="{% url 'appointment_add' %}?patient={{ patient.pk }}" class="quick-action"><i class="bi bi-calendar-plus" style="color:#2ABFBF;"></i>Appointment</a></div>
+  <div class="col-4 col-md-2"><a href="{% url 'delivery_admit' %}?patient={{ patient.pk }}" class="quick-action"><i class="bi bi-heart-pulse" style="color:#8B5CF6;"></i>Admit Labor</a></div>
+  <div class="col-4 col-md-2"><a href="{% url 'bill_add' %}?patient={{ patient.pk }}" class="quick-action"><i class="bi bi-receipt" style="color:#F59E0B;"></i>New Bill</a></div>
+  <div class="col-4 col-md-2"><a href="{% url 'add_ultrasound' patient.pk %}" class="quick-action"><i class="bi bi-camera" style="color:#EC4899;"></i>Ultrasound</a></div>
+  <div class="col-4 col-md-2"><button onclick="document.getElementById('histModal').style.display='flex'" class="quick-action" style="border:none;background:#F8FAFB;cursor:pointer;width:100%;"><i class="bi bi-clock-history" style="color:#64748B;"></i>OB History</button></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <!-- Details -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-info-circle"></i></div><h5>Patient Details</h5></div>
+      <div class="panel-body">
+        <table style="width:100%;font-size:13px;">
+          <tr><td style="color:#94A3B8;padding:5px 0;width:45%;">Date of Birth</td><td style="font-weight:600;">{{ patient.date_of_birth|date:"M d, Y" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:5px 0;">LMP</td><td style="font-weight:600;">{{ patient.lmp|date:"M d, Y"|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:5px 0;">Partner</td><td style="font-weight:600;">{{ patient.partner_name|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:5px 0;">Allergies</td><td style="font-weight:600;">{{ patient.allergies|default:"NKDA" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:5px 0;">Conditions</td><td style="font-weight:600;">{{ patient.existing_conditions|default:"None" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:5px 0;vertical-align:top;">Address</td><td style="font-weight:600;font-size:12px;">{{ patient.address }}</td></tr>
+        </table>
+        {% if patient.notes %}<div style="margin-top:12px;padding:10px;background:#F8FAFB;border-radius:8px;font-size:12px;color:#64748B;"><div style="font-weight:700;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Notes</div>{{ patient.notes }}</div>{% endif %}
+      </div>
+    </div>
+    <!-- Emergency contacts -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-telephone-forward"></i></div><h5>Emergency Contacts</h5></div>
+      <div class="panel-body">
+        {% for ec in emergency_contacts %}<div style="padding:8px 0;border-bottom:1px solid #F0F4F8;"><div style="font-weight:700;font-size:13px;">{{ ec.name }}</div><div style="font-size:12px;color:#64748B;">{{ ec.relationship }} · {{ ec.contact_number }}</div></div>{% empty %}<div style="color:#94A3B8;font-size:13px;text-align:center;padding:12px 0;">No emergency contacts</div>{% endfor %}
+      </div>
+    </div>
+    <!-- Past Pregnancy History -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-clock-history"></i></div><h5>Past Pregnancies</h5><button onclick="document.getElementById('histModal').style.display='flex'" class="btn-outline-rose" style="font-size:11px;padding:4px 10px;"><i class="bi bi-plus"></i></button></div>
+      <div>
+        {% for ph in pregnancy_history %}<div style="padding:12px 20px;border-bottom:1px solid #F0F4F8;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,.1);color:#F59E0B;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">{{ ph.year }}</div>
+            <div><div style="font-weight:600;font-size:13px;">{{ ph.delivery_type|default:"—" }} · {{ ph.outcome|default:"—" }}</div>
+            <div style="font-size:12px;color:#64748B;">{% if ph.birth_weight %}{{ ph.birth_weight }} · {% endif %}{% if ph.complications %}{{ ph.complications }}{% else %}No complications{% endif %}</div></div>
+          </div>
+        </div>{% empty %}<div style="padding:20px;text-align:center;color:#94A3B8;font-size:13px;">No past pregnancy history</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <!-- Prenatal visits -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-activity"></i></div><h5>Recent Prenatal Visits</h5><a href="{% url 'prenatal_add' %}?patient={{ patient.pk %}" class="btn-rose" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> New</a></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead><tr><th>Date</th><th>GA</th><th>BP</th><th>Weight</th><th>FHR</th><th>Risk</th><th></th></tr></thead>
+          <tbody>{% for v in prenatal_visits %}
+            <tr>
+              <td style="font-weight:700;">{{ v.visit_date|date:"M d, Y" }}</td>
+              <td>{{ v.gestational_age_weeks }}w</td>
+              <td>{{ v.bp_display }}{% if v.is_bp_high %} <i class="bi bi-exclamation-triangle-fill text-danger"></i>{% endif %}</td>
+              <td>{{ v.weight }}kg</td>
+              <td>{{ v.fetal_heart_rate|default:"—" }}</td>
+              <td>{% if v.risk_flag == "high_risk" %}<span class="status-badge badge-risk-high" style="font-size:10px;">High</span>{% elif v.risk_flag == "borderline" %}<span class="status-badge badge-risk-mod" style="font-size:10px;">Border</span>{% else %}<span class="status-badge badge-risk-low" style="font-size:10px;">Normal</span>{% endif %}</td>
+              <td><a href="{% url 'prenatal_detail' v.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a></td>
+            </tr>{% empty %}
+            <tr><td colspan="7" class="text-center text-muted py-3" style="font-size:13px;">No prenatal visits yet</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if prenatal_visits %}<div style="padding:10px 20px;border-top:1px solid #F0F4F8;"><a href="{% url 'patient_prenatal' patient.pk %}" style="font-size:12px;color:#64748B;text-decoration:none;">View all prenatal visits <i class="bi bi-arrow-right"></i></a></div>{% endif %}
+    </div>
+
+    <!-- Ultrasounds -->
+    {% if ultrasounds %}
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-camera"></i></div><h5>Ultrasound Records</h5><a href="{% url 'add_ultrasound' patient.pk %}" class="btn-teal" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> Add</a></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead><tr><th>Date</th><th>GA by U/S</th><th>Findings</th><th>Done By</th></tr></thead>
+          <tbody>{% for u in ultrasounds %}<tr><td style="font-weight:700;">{{ u.date|date:"M d, Y" }}</td><td>{{ u.ga_by_ultrasound|default:"—" }}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.findings|truncatechars:60 }}</td><td style="font-size:12px;color:#64748B;">{{ u.done_by|default:"—" }}</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Appointments -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-calendar-check"></i></div><h5>Upcoming Appointments</h5><a href="{% url 'appointment_add' %}?patient={{ patient.pk }}" class="btn-teal" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> Add</a></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead><tr><th>Date</th><th>Time</th><th>Type</th><th>Status</th></tr></thead>
+          <tbody>{% for a in appointments %}<tr><td style="font-weight:600;">{{ a.date|date:"M d, Y" }}</td><td>{{ a.time|time:"h:i A" }}</td><td>{{ a.get_appointment_type_display }}</td><td><span class="status-badge badge-{{ a.status }}">{{ a.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-3" style="font-size:13px;">No upcoming appointments</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Bills -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-receipt"></i></div><h5>Billing</h5><a href="{% url 'bill_add' %}?patient={{ patient.pk }}" class="btn-rose" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> New Bill</a></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead><tr><th>Bill No.</th><th>Date</th><th>Total</th><th>Balance</th><th>Status</th><th></th></tr></thead>
+          <tbody>{% for b in bills %}<tr><td style="font-family:monospace;font-weight:700;font-size:12px;color:#2ABFBF;">{{ b.bill_number }}</td><td>{{ b.billing_date|date:"M d, Y" }}</td><td style="font-weight:700;">₱{{ b.total_amount|floatformat:2 }}</td><td style="font-weight:700;{% if b.balance > 0 %}color:#EF4444;{% else %}color:#10B981;{% endif %}">₱{{ b.balance|floatformat:2 }}</td><td><span class="status-badge badge-{{ b.payment_status }}">{{ b.get_payment_status_display }}</span></td><td><a href="{% url 'bill_detail' b.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a></td></tr>{% empty %}<tr><td colspan="6" class="text-center text-muted py-3" style="font-size:13px;">No billing records</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MATERNAL IMMUNIZATIONS -->
+<div class="panel mb-3">
+  <div class="panel-header">
+    <div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-shield-plus"></i></div>
+    <h5>Maternal Immunizations</h5>
+  </div>
+  {% if patient.maternal_immunizations.all %}
+  <div class="table-responsive">
+    <table class="table mb-0" style="font-size:13px;">
+      <thead><tr><th>Vaccine</th><th>Date Given</th><th>Given By</th><th>Facility</th><th></th></tr></thead>
+      <tbody>
+        {% for imm in patient.maternal_immunizations.all %}
+        <tr>
+          <td style="font-weight:700;">{{ imm.get_vaccine_display }}</td>
+          <td>{{ imm.date_given|date:"M d, Y" }}</td>
+          <td>{{ imm.given_by|default:"—" }}</td>
+          <td>{{ imm.facility|default:"—" }}</td>
+          <td>
+            <form method="post" action="{% url 'delete_maternal_immunization' imm.pk %}" style="display:inline;" onsubmit="return confirm('Delete this record?')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="padding:20px;text-align:center;color:#94A3B8;font-size:13px;"><i class="bi bi-shield-plus" style="font-size:24px;opacity:.3;display:block;margin-bottom:6px;"></i>No immunization records</div>
+  {% endif %}
+  <div style="padding:14px 18px;border-top:1px solid #F0F4F8;">
+    <form method="post" action="{% url 'add_maternal_immunization' patient.pk %}" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <div class="col-md-3">
+        <label class="form-label" style="font-size:11px;">Vaccine</label>
+        <select name="vaccine" class="form-select" style="font-size:12px;" required>
+          <option value="">Select...</option>
+          <option value="tt1">TT1</option><option value="tt2">TT2</option>
+          <option value="tt3">TT3</option><option value="tt4">TT4</option>
+          <option value="tt5">TT5</option><option value="flu">Influenza</option>
+          <option value="hepb">Hepatitis B</option><option value="covid">COVID-19</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="col-md-2"><label class="form-label" style="font-size:11px;">Date Given</label><input type="date" name="date_given" class="form-control" style="font-size:12px;" required></div>
+      <div class="col-md-3"><label class="form-label" style="font-size:11px;">Given By</label><input type="text" name="given_by" class="form-control" style="font-size:12px;" placeholder="Staff name"></div>
+      <div class="col-md-2"><label class="form-label" style="font-size:11px;">Facility</label><input type="text" name="facility" class="form-control" style="font-size:12px;" placeholder="BHC, RHU..."></div>
+      <div class="col-md-2"><button type="submit" class="btn-teal w-100" style="justify-content:center;font-size:12px;padding:8px;"><i class="bi bi-plus"></i> Add</button></div>
+    </form>
+  </div>
+</div>
+
+
+<!-- POSTPARTUM VISITS -->
+{% if patient.postpartum_visits.all %}
+<div class="panel mb-3">
+  <div class="panel-header">
+    <div class="panel-icon" style="background:rgba(232,82,122,.1);color:#E8527A;"><i class="bi bi-heart"></i></div>
+    <h5>Postpartum Visits ({{ patient.postpartum_visits.count }})</h5>
+    <a href="{% url 'patient_postpartum' patient.pk %}" style="margin-left:auto;font-size:12px;color:#64748B;text-decoration:none;">View all <i class="bi bi-arrow-right"></i></a>
+  </div>
+  <div>
+    {% for v in patient.postpartum_visits.all|slice:":3" %}
+    <a href="{% url 'postpartum_detail' v.pk %}" style="display:flex;align-items:center;padding:12px 18px;border-bottom:1px solid #F0F4F8;text-decoration:none;">
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:13px;color:#1A2B4B;">{{ v.get_visit_type_display }}</div>
+        <div style="font-size:11px;color:#94A3B8;">{{ v.visit_date|date:"M d, Y" }}{% if v.days_postpartum %} · Day {{ v.days_postpartum }}{% endif %}</div>
+      </div>
+      {% if v.is_depression_risk %}<span style="font-size:10px;color:#EF4444;font-weight:700;">⚠️ EPDS {{ v.mood_score }}</span>{% endif %}
+      <i class="bi bi-chevron-right" style="color:#CBD5E1;margin-left:8px;font-size:12px;"></i>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Pregnancy History Modal -->
+<div id="histModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <h5 style="font-weight:800;color:#1A2B4B;margin-bottom:20px;"><i class="bi bi-clock-history me-2" style="color:#F59E0B;"></i>Add Past Pregnancy</h5>
+    <form method="post" action="{% url 'add_pregnancy_history' patient.pk %}">{% csrf_token %}
+      <div class="row g-3">
+        <div class="col-md-4"><label class="form-label">Year *</label><input type="number" name="year" class="form-control" min="1970" max="2030" required placeholder="2024"></div>
+        <div class="col-md-8"><label class="form-label">Delivery Type</label>
+          <select name="delivery_type" class="form-select">
+            <option value="NSD">Normal Spontaneous Delivery</option>
+            <option value="Assisted">Assisted Delivery</option>
+            <option value="CS">Cesarean Section</option>
+            <option value="Abortion">Abortion</option>
+            <option value="Stillbirth">Stillbirth</option>
+          </select>
+        </div>
+        <div class="col-md-6"><label class="form-label">Outcome</label><input type="text" name="outcome" class="form-control" placeholder="e.g. Live birth, term"></div>
+        <div class="col-md-6"><label class="form-label">Birth Weight</label><input type="text" name="birth_weight" class="form-control" placeholder="e.g. 3.2kg"></div>
+        <div class="col-12"><label class="form-label">Complications</label><input type="text" name="complications" class="form-control" placeholder="None, or describe..."></div>
+        <div class="col-12"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+        <div class="col-12 d-flex gap-2">
+          <button type="submit" class="btn-rose" style="flex:1;justify-content:center;"><i class="bi bi-check-circle"></i> Add History</button>
+          <button type="button" onclick="document.getElementById('histModal').style.display='none'" class="btn-outline-rose" style="flex:1;justify-content:center;">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

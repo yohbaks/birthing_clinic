@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Delivery Report{% endblock %}
+{% block topbar_title %}Delivery Report{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><div class="page-title">Delivery Report</div></div></div>
+<div class="panel mb-3"><div class="panel-body" style="padding:14px 20px;"><form method="get" class="d-flex gap-2"><input type="month" name="month" value="{{ month }}" class="form-control" style="max-width:200px;"><button type="submit" class="btn-rose">View</button></form></div></div>
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table dt-table mb-0" style="font-size:13px;">
+      <thead><tr><th>Admitted</th><th>Patient</th><th>Delivery Type</th><th>Delivery Time</th><th>Duration</th><th>Outcome</th></tr></thead>
+      <tbody>{% for d in deliveries %}<tr><td>{{ d.admission_datetime|date:"M d, Y H:i" }}</td><td style="font-weight:600;">{{ d.patient.full_name }}</td><td>{{ d.get_delivery_type_display|default:"—" }}</td><td>{{ d.delivery_datetime|date:"M d, Y H:i"|default:"—" }}</td><td>{{ d.labor_duration|default:"—" }}</td><td>{% if d.delivery_datetime %}<span class="status-badge badge-completed">Delivered</span>{% elif d.referral_hospital %}<span class="status-badge badge-cancelled">Referred</span>{% else %}<span class="status-badge badge-confirmed">In Labor</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No deliveries this month</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block title %}Morbidity Report — {{ year }}{% endblock %}
+{% block topbar_title %}Morbidity & Mortality Report{% endblock %}
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Maternal Morbidity & Mortality Report</div>
+    <div class="page-subtitle">{{ year }} — Adverse outcome tracking for DOH reporting</div>
+  </div>
+  <div class="d-flex gap-2">
+    <form method="get" class="d-flex gap-2">
+      <select name="year" class="form-select" style="max-width:110px;" onchange="this.form.submit()">
+        {% for y in year_range %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}
+      </select>
+    </form>
+    <a href="javascript:window.print()" class="btn-outline-rose"><i class="bi bi-printer"></i> Print</a>
+  </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-3"><div class="stat-card card-navy"><div class="card-icon"><i class="bi bi-heart-pulse"></i></div><div class="stat-value">{{ total_deliveries }}</div><div class="stat-label">Total Deliveries</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card card-amber"><div class="card-icon"><i class="bi bi-exclamation-triangle"></i></div><div class="stat-value">{{ total_complications }}</div><div class="stat-label">Complications</div><div class="stat-sub">{{ complication_rate }}% rate</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card" style="border-top:3px solid #EF4444;"><div class="card-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-x-circle"></i></div><div class="stat-value">{{ maternal_deaths }}</div><div class="stat-label">Maternal Deaths</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card" style="border-top:3px solid #F59E0B;"><div class="card-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-baby-carriage"></i></div><div class="stat-value">{{ neonatal_death_count }}</div><div class="stat-label">Neonatal Deaths</div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <!-- Monthly Trend Chart -->
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-graph-up"></i></div><h5>Monthly Deliveries vs Complications — {{ year }}</h5></div>
+      <div class="panel-body"><canvas id="morbidityChart" height="110"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Complication Breakdown -->
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-bar-chart"></i></div><h5>Complications by Type</h5></div>
+      <div>
+        {% for c in comp_breakdown %}
+        <div style="padding:10px 16px;border-bottom:1px solid #F0F4F8;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:600;font-size:13px;">{{ c.complication_type|title|default:"Unspecified" }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:80px;background:#F0F4F8;border-radius:4px;height:6px;overflow:hidden;">
+              <div style="height:100%;background:#E8527A;border-radius:4px;width:{% if total_complications %}{% widthratio c.count total_complications 100 %}{% else %}0{% endif %}%;"></div>
+            </div>
+            <span style="font-weight:800;font-size:13px;min-width:24px;text-align:right;">{{ c.count }}</span>
+          </div>
+        </div>
+        {% empty %}
+        <div style="padding:32px;text-align:center;color:#94A3B8;font-size:13px;">No complications recorded this year</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Referrals + Neonatal Deaths -->
+<div class="row g-3 mb-3">
+  <div class="col-lg-6">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-send"></i></div><h5>Referrals ({{ referral_count }})</h5></div>
+      {% if referrals %}
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:12.5px;">
+          <thead><tr><th>Patient</th><th>Admitted</th><th>Condition</th></tr></thead>
+          <tbody>
+            {% for r in referrals %}
+            <tr>
+              <td style="font-weight:700;"><a href="{% url 'patient_profile' r.patient.pk %}">{{ r.patient.full_name }}</a></td>
+              <td style="font-size:11px;">{{ r.admission_datetime|date:"M d, Y" }}</td>
+              <td style="font-size:11px;color:#EF4444;">{{ r.referral_reason|default:r.maternal_condition|default:"—"|truncatechars:35 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="padding:24px;text-align:center;color:#94A3B8;font-size:13px;">No referrals this year</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-x-circle"></i></div><h5>Neonatal Deaths ({{ neonatal_death_count }}) + Stillbirths ({{ stillbirth_count }})</h5></div>
+      {% if neonatal_deaths or stillbirths %}
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:12.5px;">
+          <thead><tr><th>Baby ID</th><th>Mother</th><th>Date</th><th>Type</th></tr></thead>
+          <tbody>
+            {% for nb in neonatal_deaths %}
+            <tr>
+              <td style="font-family:monospace;font-size:11px;color:#2ABFBF;">{{ nb.baby_id }}</td>
+              <td>{{ nb.mother.full_name }}</td>
+              <td style="font-size:11px;">{{ nb.birth_datetime|date:"M d, Y" }}</td>
+              <td><span style="font-size:10px;background:rgba(245,158,11,.1);color:#D97706;padding:2px 8px;border-radius:6px;font-weight:700;">Neonatal Death</span></td>
+            </tr>
+            {% endfor %}
+            {% for sb in stillbirths %}
+            <tr>
+              <td style="font-family:monospace;font-size:11px;color:#94A3B8;">{{ sb.baby_id }}</td>
+              <td>{{ sb.mother.full_name }}</td>
+              <td style="font-size:11px;">{{ sb.birth_datetime|date:"M d, Y" }}</td>
+              <td><span style="font-size:10px;background:rgba(239,68,68,.1);color:#DC2626;padding:2px 8px;border-radius:6px;font-weight:700;">Stillbirth</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="padding:24px;text-align:center;color:#94A3B8;font-size:13px;"><i class="bi bi-check-circle" style="color:#10B981;font-size:24px;display:block;margin-bottom:8px;"></i>No neonatal deaths or stillbirths recorded this year</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Complications Detail Table -->
+{% if complications %}
+<div class="panel">
+  <div class="panel-header"><div class="panel-icon"><i class="bi bi-list-ul"></i></div><h5>Complication Records (showing up to 50)</h5></div>
+  <div class="table-responsive">
+    <table class="table dt-table mb-0" style="font-size:12.5px;">
+      <thead><tr><th>Date</th><th>Patient</th><th>Complication</th><th>Severity</th><th>Outcome</th></tr></thead>
+      <tbody>
+        {% for c in complications %}
+        <tr>
+          <td style="font-size:11px;white-space:nowrap;">{{ c.recorded_at|date:"M d, Y" }}</td>
+          <td style="font-weight:700;"><a href="{% url 'patient_profile' c.delivery_record.patient.pk %}">{{ c.delivery_record.patient.full_name }}</a></td>
+          <td>{{ c.complication_type|title|default:"—" }}</td>
+          <td>
+            {% if c.severity == 'severe' or c.severity == 'critical' %}<span style="font-size:10px;background:rgba(239,68,68,.1);color:#DC2626;padding:2px 8px;border-radius:6px;font-weight:700;">{{ c.severity|upper }}</span>
+            {% else %}<span style="font-size:10px;background:rgba(245,158,11,.1);color:#D97706;padding:2px 8px;border-radius:6px;font-weight:700;">{{ c.severity|default:"MOD"|upper }}</span>{% endif %}
+          </td>
+          <td style="font-size:12px;color:#64748B;">{{ c.outcome|default:"—"|truncatechars:40 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const monthly = {{ monthly_comp|safe }};
+new Chart(document.getElementById('morbidityChart'), {
+  type: 'bar',
+  data: {
+    labels: monthly.map(d => d.month),
+    datasets: [
+      { label: 'Deliveries', data: monthly.map(d => d.deliveries),
+        backgroundColor: 'rgba(42,191,191,.2)', borderColor: '#2ABFBF',
+        borderWidth: 2, borderRadius: 4 },
+      { label: 'Complications', data: monthly.map(d => d.complications),
+        backgroundColor: 'rgba(239,68,68,.2)', borderColor: '#EF4444',
+        borderWidth: 2, borderRadius: 4 },
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'bottom' } },
+    scales: {
+      y: { beginAtZero: true, ticks: { stepSize: 1 },
+           grid: { color: 'rgba(226,232,240,.6)' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

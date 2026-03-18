@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Inactive Patients{% endblock %}
+{% block topbar_title %}Inactive Patients{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">Inactive Patients</div><div class="page-subtitle">Deactivated patient records</div></div>
+  <a href="{% url 'patient_list' %}" class="btn-outline-rose"><i class="bi bi-arrow-left"></i> Active Patients</a>
+</div>
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table dt-table mb-0">
+      <thead><tr><th>Record No.</th><th>Patient Name</th><th>Age</th><th>Contact</th><th>Risk</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for p in patients %}
+        <tr style="opacity:.7;">
+          <td style="font-family:monospace;font-weight:700;color:#94A3B8;font-size:12px;">{{ p.record_number }}</td>
+          <td><div style="font-weight:600;">{{ p.full_name }}</div><div style="font-size:11px;color:#94A3B8;">{{ p.address|truncatechars:35 }}</div></td>
+          <td>{{ p.age }}</td>
+          <td>{{ p.contact_number }}</td>
+          <td>{% if p.risk_level == "high" %}<span class="status-badge badge-risk-high">HIGH</span>{% elif p.risk_level == "moderate" %}<span class="status-badge badge-risk-mod">MOD</span>{% else %}<span class="status-badge badge-risk-low">LOW</span>{% endif %}</td>
+          <td>
+            <a href="{% url 'reactivate_patient' p.pk %}" class="btn-teal" style="font-size:11px;padding:5px 12px;"><i class="bi bi-person-check"></i> Reactivate</a>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="6" class="text-center text-muted py-5"><i class="bi bi-check-circle" style="font-size:32px;color:#10B981;display:block;margin-bottom:8px;"></i>No inactive patients</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

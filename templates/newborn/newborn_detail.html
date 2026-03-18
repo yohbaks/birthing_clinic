@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}{{ newborn.baby_id }}{% endblock %}
+{% block topbar_title %}Newborn Detail{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'newborn_list' %}">Newborns</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>{{ newborn.baby_id }}</span></div>
+<div class="patient-profile-header mb-3" style="background:linear-gradient(135deg,#064E3B,#065F46);">
+  <div class="d-flex align-items-center gap-4">
+    <div style="font-size:60px;">{% if newborn.gender == "male" %}👶{% else %}👧{% endif %}</div>
+    <div style="flex:1;">
+      <div style="font-size:22px;font-weight:800;">{{ newborn.baby_name|default:"Unnamed Baby" }}</div>
+      <div style="color:rgba(255,255,255,.65);font-size:13px;margin-top:4px;">{{ newborn.baby_id }} · {{ newborn.get_gender_display }} · Born {{ newborn.birth_datetime|date:"F j, Y g:i A" }}</div>
+      <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
+        <div style="font-size:12px;color:rgba(255,255,255,.5);">Weight</div><div style="font-size:13px;font-weight:700;">{{ newborn.weight_grams }}g</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);">Length</div><div style="font-size:13px;font-weight:700;">{{ newborn.length_cm }}cm</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);">APGAR</div><div style="font-size:13px;font-weight:700;">{{ newborn.apgar_1min|default:"?" }}/{{ newborn.apgar_5min|default:"?" }}</div>
+        {% if newborn.head_circumference_cm %}<div style="font-size:12px;color:rgba(255,255,255,.5);">Head Circ.</div><div style="font-size:13px;font-weight:700;">{{ newborn.head_circumference_cm }}cm</div>{% endif %}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+      {% if newborn.birth_status == "alive" %}<span style="background:rgba(16,185,129,.25);color:#6EE7B7;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:800;">ALIVE</span>{% else %}<span style="background:rgba(239,68,68,.2);color:#FCA5A5;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;">{{ newborn.get_birth_status_display|upper }}</span>{% endif %}
+      <a href="{% url 'newborn_edit' newborn.pk %}" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:9px;color:#fff;padding:6px 14px;font-size:12px;font-weight:600;text-decoration:none;"><i class="bi bi-pencil"></i> Edit</a>
+      <a href="{% url 'pdf_newborn' newborn.pk %}" target="_blank" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:9px;color:#fff;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+      {% if not newborn.discharge_datetime %}<button onclick="document.getElementById('dischargeModal').style.display='flex'" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:9px;color:#fff;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;"><i class="bi bi-box-arrow-right"></i> Discharge</button>{% else %}<span style="font-size:11px;color:rgba(255,255,255,.6);">Discharged {{ newborn.discharge_datetime|date:"M d, Y" }}</span>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-rulers"></i></div><h5>Measurements</h5></div>
+      <div class="panel-body">
+        <table style="width:100%;font-size:13px;">
+          <tr><td style="color:#94A3B8;padding:6px 0;width:50%;">Weight</td><td style="font-weight:700;">{{ newborn.weight_grams }}g ({{ newborn.weight_kg }}kg)</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">Length</td><td style="font-weight:700;">{{ newborn.length_cm }}cm</td></tr>
+          {% if newborn.head_circumference_cm %}<tr><td style="color:#94A3B8;padding:6px 0;">Head Circ.</td><td style="font-weight:700;">{{ newborn.head_circumference_cm }}cm</td></tr>{% endif %}
+          {% if newborn.chest_circumference_cm %}<tr><td style="color:#94A3B8;padding:6px 0;">Chest Circ.</td><td style="font-weight:700;">{{ newborn.chest_circumference_cm }}cm</td></tr>{% endif %}
+          <tr><td style="color:#94A3B8;padding:6px 0;">APGAR 1min</td><td style="font-weight:700;{% if newborn.apgar_1min and newborn.apgar_1min < 7 %}color:#F59E0B;{% endif %}">{{ newborn.apgar_1min|default:"—" }}/10</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">APGAR 5min</td><td style="font-weight:700;{% if newborn.apgar_5min and newborn.apgar_5min < 7 %}color:#EF4444;{% endif %}">{{ newborn.apgar_5min|default:"—" }}/10</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-shield-check"></i></div><h5>Initial Interventions</h5></div>
+      <div class="panel-body">
+        {% for label, done in interventions %}
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:8px;border-radius:8px;background:#F8FAFB;margin-bottom:6px;">
+          <span>{{ label }}</span>
+          {% if done %}<span style="color:#10B981;font-weight:700;"><i class="bi bi-check-circle-fill"></i> Done</span>{% else %}<span style="color:#EF4444;font-size:12px;"><i class="bi bi-x-circle"></i> Not done</span>{% endif %}
+        </div>
+        {% empty %}
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:8px;border-radius:8px;background:#F8FAFB;margin-bottom:6px;"><span>Vitamin K</span>{% if newborn.vitamin_k_given %}<span style="color:#10B981;font-weight:700;"><i class="bi bi-check-circle-fill"></i> Given</span>{% else %}<span style="color:#EF4444;"><i class="bi bi-x-circle"></i> Not given</span>{% endif %}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:8px;border-radius:8px;background:#F8FAFB;margin-bottom:6px;"><span>Eye Prophylaxis</span>{% if newborn.eye_prophylaxis_given %}<span style="color:#10B981;font-weight:700;"><i class="bi bi-check-circle-fill"></i> Given</span>{% else %}<span style="color:#EF4444;"><i class="bi bi-x-circle"></i> Not given</span>{% endif %}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:8px;border-radius:8px;background:#F8FAFB;"><span>Newborn Screening</span>{% if newborn.newborn_screening_done %}<span style="color:#10B981;font-weight:700;"><i class="bi bi-check-circle-fill"></i> Done</span>{% else %}<span style="color:#EF4444;"><i class="bi bi-x-circle"></i> Not done</span>{% endif %}</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-person-heart"></i></div><h5>Mother</h5></div>
+      <div class="panel-body">
+        <div style="font-weight:800;font-size:16px;color:#1A2B4B;">{{ newborn.mother.full_name }}</div>
+        <div style="font-size:12px;color:#64748B;margin-top:2px;">{{ newborn.mother.record_number }}</div>
+        <table style="width:100%;font-size:13px;margin-top:12px;">
+          <tr><td style="color:#94A3B8;padding:5px 0;">Contact</td><td style="font-weight:600;">{{ newborn.mother.contact_number }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:5px 0;">G/P/A</td><td style="font-weight:600;">G{{ newborn.mother.gravida }}P{{ newborn.mother.para }}A{{ newborn.mother.abortion_history }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:5px 0;">Blood Type</td><td style="font-weight:600;">{{ newborn.mother.blood_type|default:"Unknown" }}</td></tr>
+        </table>
+        <a href="{% url 'patient_profile' newborn.mother.pk %}" class="btn-outline-rose mt-3" style="font-size:12px;padding:6px 14px;display:inline-flex;"><i class="bi bi-person me-1"></i> View Profile</a>
+      </div>
+    </div>
+    {% if newborn.notes %}
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-journal"></i></div><h5>Notes</h5></div>
+      <div class="panel-body"><p style="font-size:13px;white-space:pre-line;">{{ newborn.notes }}</p></div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-md-4">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-syringe"></i></div>
+        <h5>Immunizations</h5>
+        <button onclick="document.getElementById('immModal').style.display='flex'" class="btn-teal" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> Add</button>
+      </div>
+      <div>
+        {% for imm in immunizations %}
+        <div style="padding:14px 20px;border-bottom:1px solid #F0F4F8;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(16,185,129,.1);color:#10B981;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;"><i class="bi bi-syringe"></i></div>
+            <div>
+              <div style="font-weight:700;font-size:13px;">{{ imm.vaccine_name }}</div>
+              <div style="font-size:11px;color:#64748B;">{{ imm.date_given|date:"M d, Y" }} {% if imm.dose %}· {{ imm.dose }}{% endif %}</div>
+            </div>
+          </div>
+          {% if imm.administered_by %}<div style="font-size:11px;color:#94A3B8;padding-left:40px;">By: {{ imm.administered_by }}</div>{% endif %}
+        </div>
+        {% empty %}
+        <div style="padding:32px;text-align:center;color:#94A3B8;">
+          <i class="bi bi-syringe" style="font-size:28px;opacity:.3;display:block;margin-bottom:8px;"></i>
+          <div style="font-size:13px;">No immunizations recorded</div>
+          <div style="font-size:11px;margin-top:4px;">BCG and Hepatitis B are usually given at birth</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Immunization Modal -->
+<div id="immModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <h5 style="font-weight:800;color:#1A2B4B;margin-bottom:20px;"><i class="bi bi-syringe me-2" style="color:#10B981;"></i>Add Immunization</h5>
+    <form method="post" action="{% url 'add_immunization' newborn.pk %}">{% csrf_token %}
+      <div class="mb-3"><label class="form-label">Vaccine *</label>
+        <select name="vaccine_name" class="form-select" required>
+          <option value="">Select vaccine</option>
+          <option value="BCG">BCG (Bacillus Calmette-Guérin)</option>
+          <option value="Hepatitis B (birth dose)">Hepatitis B — Birth Dose</option>
+          <option value="Hepatitis B (2nd dose)">Hepatitis B — 2nd Dose</option>
+          <option value="Pentavalent (DPT-HepB-Hib)">Pentavalent (DPT-HepB-Hib)</option>
+          <option value="OPV">OPV (Oral Polio)</option>
+          <option value="IPV">IPV (Inactivated Polio)</option>
+          <option value="PCV">PCV (Pneumococcal)</option>
+          <option value="MMR">MMR</option>
+          <option value="Other">Other (specify)</option>
+        </select>
+      </div>
+      <div class="mb-3"><label class="form-label">Date Given *</label><input type="date" name="date_given" class="form-control" required></div>
+      <div class="mb-3"><label class="form-label">Dose</label><input type="text" name="dose" class="form-control" placeholder="e.g. 0.5mL, 1st dose"></div>
+      <div class="mb-3"><label class="form-label">Administered By</label><input type="text" name="administered_by" class="form-control" placeholder="Name of nurse / midwife"></div>
+      <div class="mb-3"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-teal" style="flex:1;justify-content:center;"><i class="bi bi-check-circle"></i> Save</button>
+        <button type="button" onclick="document.getElementById('immModal').style.display='none'" class="btn-outline-rose" style="flex:1;justify-content:center;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Discharge Modal -->
+<div id="dischargeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <h5 style="font-weight:800;margin-bottom:20px;"><i class="bi bi-box-arrow-right me-2" style="color:#2ABFBF;"></i>Discharge Newborn</h5>
+    <form method="post" action="{% url 'discharge_newborn' newborn.pk %}">{% csrf_token %}
+      <div class="mb-3"><label class="form-label">Discharge Date & Time *</label><input type="datetime-local" name="discharge_datetime" class="form-control" required></div>
+      <div class="mb-3"><label class="form-label">Discharge Weight (grams)</label><input type="number" name="discharge_weight" class="form-control" placeholder="{{ newborn.weight_grams }}"></div>
+      <div class="mb-3"><label class="form-label">Discharge Notes</label><textarea name="discharge_notes" class="form-control" rows="2" placeholder="Condition on discharge, instructions given..."></textarea></div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-teal" style="flex:1;justify-content:center;">Discharge</button>
+        <button type="button" onclick="document.getElementById('dischargeModal').style.display='none'" class="btn-outline-rose" style="flex:1;justify-content:center;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

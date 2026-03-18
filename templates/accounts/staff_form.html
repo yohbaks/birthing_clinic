@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Add Staff{% endblock %}
+{% block topbar_title %}Add Staff Account{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><div class="page-title">Add Staff Account</div></div></div>
+<form method="post">
+{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-person-badge"></i></div><h5>Account Details</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">First Name *</label><input type="text" name="first_name" class="form-control" required></div>
+          <div class="col-md-6"><label class="form-label">Last Name *</label><input type="text" name="last_name" class="form-control" required></div>
+          <div class="col-md-6"><label class="form-label">Username *</label><input type="text" name="username" class="form-control" required></div>
+          <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" class="form-control"></div>
+          <div class="col-md-6"><label class="form-label">Password *</label><input type="password" name="password" class="form-control" required minlength="8"></div>
+          <div class="col-md-6">
+            <label class="form-label">Role *</label>
+            <select name="role" class="form-select" required>
+              <option value="receptionist">Receptionist</option>
+              <option value="midwife">Midwife</option>
+              <option value="nurse">Nurse</option>
+              <option value="doctor">Doctor</option>
+              <option value="cashier">Cashier</option>
+              <option value="inventory_clerk">Inventory Clerk</option>
+              <option value="admin">Administrator</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Phone</label><input type="text" name="phone" class="form-control"></div>
+          <div class="col-md-6"><label class="form-label">License No.</label><input type="text" name="license_number" class="form-control"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-body">
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-check-circle"></i> Create Account</button>
+        <a href="{% url 'staff_list' %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

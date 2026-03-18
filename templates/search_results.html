@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Search: {{ q }}{% endblock %}
+{% block topbar_title %}Search Results{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Search Results</div>
+    <div class="page-subtitle">
+      {% if q %}"<strong>{{ q }}</strong>" — {{ total }} result{{ total|pluralize }} found{% else %}Enter a search term above{% endif %}
+    </div>
+  </div>
+</div>
+
+{% if not q %}
+<div class="panel">
+  <div class="panel-body" style="text-align:center;padding:60px;">
+    <i class="bi bi-search" style="font-size:48px;color:#E2E8F0;display:block;margin-bottom:16px;"></i>
+    <div style="font-weight:700;color:#94A3B8;font-size:16px;">Type at least 2 characters to search</div>
+    <div style="font-size:13px;color:#CBD5E1;margin-top:8px;">Searches across patients, bills, deliveries, and newborns</div>
+  </div>
+</div>
+{% elif total == 0 %}
+<div class="panel">
+  <div class="panel-body" style="text-align:center;padding:60px;">
+    <i class="bi bi-search" style="font-size:48px;color:#E2E8F0;display:block;margin-bottom:16px;"></i>
+    <div style="font-weight:700;color:#94A3B8;font-size:16px;">No results for "{{ q }}"</div>
+    <div style="font-size:13px;color:#CBD5E1;margin-top:8px;">Try a different name, record number, or bill number</div>
+  </div>
+</div>
+{% else %}
+
+<!-- PATIENTS -->
+{% if results.patients %}
+<div class="panel mb-3">
+  <div class="panel-header">
+    <div class="panel-icon"><i class="bi bi-person-heart"></i></div>
+    <h5>Patients <span style="font-size:12px;background:rgba(232,82,122,.1);color:#E8527A;padding:2px 8px;border-radius:8px;margin-left:6px;">{{ results.patients|length }}</span></h5>
+  </div>
+  <div>
+    {% for p in results.patients %}
+    <a href="{% url 'patient_profile' p.pk %}" style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F0F4F8;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#F8FAFB'" onmouseout="this.style.background=''">
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#E8527A,#C23860);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;margin-right:14px;">
+        {{ p.full_name|first|upper }}
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:#1A2B4B;">{{ p.full_name }}</div>
+        <div style="font-size:12px;color:#94A3B8;margin-top:1px;">{{ p.record_number }} · Age {{ p.age }} · {{ p.contact_number }}</div>
+      </div>
+      <div>
+        {% if p.risk_level == 'high' %}<span class="status-badge badge-risk-high">HIGH RISK</span>
+        {% elif p.risk_level == 'moderate' %}<span class="status-badge badge-risk-mod">MOD</span>
+        {% else %}<span class="status-badge badge-risk-low">LOW</span>{% endif %}
+      </div>
+      <i class="bi bi-chevron-right" style="color:#CBD5E1;margin-left:12px;"></i>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- BILLS -->
+{% if results.bills %}
+<div class="panel mb-3">
+  <div class="panel-header">
+    <div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-receipt"></i></div>
+    <h5>Bills <span style="font-size:12px;background:rgba(245,158,11,.1);color:#F59E0B;padding:2px 8px;border-radius:8px;margin-left:6px;">{{ results.bills|length }}</span></h5>
+  </div>
+  <div>
+    {% for b in results.bills %}
+    <a href="{% url 'bill_detail' b.pk %}" style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F0F4F8;text-decoration:none;" onmouseover="this.style.background='#F8FAFB'" onmouseout="this.style.background=''">
+      <div style="flex:1;">
+        <div style="font-weight:700;color:#1A2B4B;font-family:monospace;">{{ b.bill_number }}</div>
+        <div style="font-size:12px;color:#94A3B8;margin-top:1px;">{{ b.patient.full_name }} · {{ b.billing_date|date:"M d, Y" }}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-weight:800;color:#1A2B4B;">₱{{ b.total_amount|floatformat:2 }}</div>
+        <div style="margin-top:2px;">
+          {% if b.payment_status == 'paid' %}<span class="status-badge badge-completed" style="font-size:10px;">PAID</span>
+          {% elif b.payment_status == 'partial' %}<span class="status-badge badge-partial" style="font-size:10px;">PARTIAL</span>
+          {% elif b.payment_status == 'waived' %}<span class="status-badge" style="font-size:10px;background:#F1F5F9;color:#64748B;">WAIVED</span>
+          {% else %}<span class="status-badge badge-unpaid" style="font-size:10px;">UNPAID</span>{% endif %}
+        </div>
+      </div>
+      <i class="bi bi-chevron-right" style="color:#CBD5E1;margin-left:12px;"></i>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- DELIVERIES -->
+{% if results.deliveries %}
+<div class="panel mb-3">
+  <div class="panel-header">
+    <div class="panel-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6;"><i class="bi bi-heart-pulse"></i></div>
+    <h5>Deliveries <span style="font-size:12px;background:rgba(139,92,246,.1);color:#8B5CF6;padding:2px 8px;border-radius:8px;margin-left:6px;">{{ results.deliveries|length }}</span></h5>
+  </div>
+  <div>
+    {% for d in results.deliveries %}
+    <a href="{% url 'delivery_detail' d.pk %}" style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F0F4F8;text-decoration:none;" onmouseover="this.style.background='#F8FAFB'" onmouseout="this.style.background=''">
+      <div style="flex:1;">
+        <div style="font-weight:700;color:#1A2B4B;">{{ d.patient.full_name }}</div>
+        <div style="font-size:12px;color:#94A3B8;margin-top:1px;">
+          {{ d.patient.record_number }} · Admitted {{ d.admission_datetime|date:"M d, Y" }}
+          {% if d.delivery_type %} · {{ d.get_delivery_type_display }}{% endif %}
+        </div>
+      </div>
+      <i class="bi bi-chevron-right" style="color:#CBD5E1;margin-left:12px;"></i>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- NEWBORNS -->
+{% if results.newborns %}
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-emoji-smile"></i></div>
+    <h5>Newborns <span style="font-size:12px;background:rgba(16,185,129,.1);color:#10B981;padding:2px 8px;border-radius:8px;margin-left:6px;">{{ results.newborns|length }}</span></h5>
+  </div>
+  <div>
+    {% for nb in results.newborns %}
+    <a href="{% url 'newborn_detail' nb.pk %}" style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F0F4F8;text-decoration:none;" onmouseover="this.style.background='#F8FAFB'" onmouseout="this.style.background=''">
+      <div style="flex:1;">
+        <div style="font-weight:700;color:#1A2B4B;">{{ nb.baby_name|default:"Unnamed Baby" }} <span style="font-size:11px;color:#94A3B8;font-family:monospace;">{{ nb.baby_id }}</span></div>
+        <div style="font-size:12px;color:#94A3B8;margin-top:1px;">Mother: {{ nb.mother.full_name }} · {{ nb.birth_datetime|date:"M d, Y" }} · {{ nb.weight_grams }}g</div>
+      </div>
+      <i class="bi bi-chevron-right" style="color:#CBD5E1;margin-left:12px;"></i>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

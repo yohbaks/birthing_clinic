@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Add Supplier{% endblock %}
+{% block topbar_title %}Add Supplier{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><div class="page-title">{% if supplier %}Edit{% else %}Add{% endif %} Supplier</div></div></div>
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-building"></i></div><h5>Supplier Details</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label">Company Name *</label><input type="text" name="name" class="form-control" value="{{ supplier.name|default:'' }}" required></div>
+          <div class="col-md-6"><label class="form-label">Contact Person</label><input type="text" name="contact_person" class="form-control" value="{{ supplier.contact_person|default:'' }}"></div>
+          <div class="col-md-6"><label class="form-label">Phone</label><input type="text" name="phone" class="form-control" value="{{ supplier.phone|default:'' }}"></div>
+          <div class="col-12"><label class="form-label">Email</label><input type="email" name="email" class="form-control" value="{{ supplier.email|default:'' }}"></div>
+          <div class="col-12"><label class="form-label">Address</label><textarea name="address" class="form-control" rows="2">{{ supplier.address|default:'' }}</textarea></div>
+          {% if supplier %}
+          <div class="col-12">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" name="is_active" {% if supplier.is_active %}checked{% endif %}> Mark as Active Supplier
+            </label>
+          </div>
+          {% endif %}
+          <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn-rose" style="flex:1;justify-content:center;padding:11px;"><i class="bi bi-check-circle"></i> Save Supplier</button>
+            <a href="{% if supplier %}{% url 'supplier_detail' supplier.pk %}{% else %}{% url 'supplier_list' %}{% endif %}" class="btn-outline-rose" style="flex:1;justify-content:center;padding:10px;">Cancel</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

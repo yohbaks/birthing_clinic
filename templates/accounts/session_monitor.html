@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Session Monitor{% endblock %}
+{% block topbar_title %}Session Monitor{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Session Monitor</div>
+    <div class="page-subtitle">Active logins and recent authentication activity</div>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-4">
+    <div class="stat-card card-teal">
+      <div class="card-icon"><i class="bi bi-people"></i></div>
+      <div class="stat-value">{{ sessions|length }}</div>
+      <div class="stat-label">Active Sessions</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card card-rose">
+      <div class="card-icon"><i class="bi bi-shield-x"></i></div>
+      <div class="stat-value">{{ recent_attempts|length }}</div>
+      <div class="stat-label">Login Attempts (24h)</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="border-top:3px solid #EF4444;">
+      <div class="card-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="stat-value">{{ failed_ips|length }}</div>
+      <div class="stat-label">Suspicious IPs</div>
+      <div class="stat-sub">3+ failures in 15 min</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- ACTIVE SESSIONS -->
+  <div class="col-lg-7">
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-person-check"></i></div>
+        <h5>Active Sessions</h5>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead><tr><th>User</th><th>Role</th><th>IP Address</th><th>Last Activity</th></tr></thead>
+          <tbody>
+            {% for s in sessions %}
+            <tr {% if s.user == request.user %}style="background:rgba(42,191,191,.04);"{% endif %}>
+              <td style="font-weight:700;">
+                {{ s.user.get_full_name|default:s.user.username }}
+                {% if s.user == request.user %}<span style="font-size:10px;background:rgba(42,191,191,.15);color:#0F766E;padding:1px 6px;border-radius:6px;margin-left:4px;">You</span>{% endif %}
+              </td>
+              <td style="font-size:11px;color:#64748B;">
+                {% if s.user.staff_profile %}{{ s.user.staff_profile.get_role_display }}{% else %}—{% endif %}
+              </td>
+              <td style="font-family:monospace;font-size:12px;">{{ s.ip_address|default:"—" }}</td>
+              <td style="font-size:12px;color:#64748B;">{{ s.last_activity|timesince }} ago</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted py-3">No active sessions tracked yet</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUSPICIOUS IPS -->
+    {% if failed_ips %}
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-shield-x"></i></div>
+        <h5>Suspicious IPs <span style="font-size:11px;color:#94A3B8;">(3+ failures in last 15 min — currently locked out)</span></h5>
+      </div>
+      <div>
+        {% for ip in failed_ips %}
+        <div style="padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0F4F8;">
+          <span style="font-family:monospace;font-weight:700;color:#EF4444;">{{ ip.ip_address }}</span>
+          <span style="background:rgba(239,68,68,.1);color:#DC2626;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px;">{{ ip.count }} failed attempts</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RECENT LOGIN ATTEMPTS -->
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="bi bi-clock-history"></i></div>
+        <h5>Recent Login Attempts (24h)</h5>
+      </div>
+      <div style="max-height:480px;overflow-y:auto;">
+        {% for attempt in recent_attempts %}
+        <div style="padding:10px 16px;border-bottom:1px solid #F0F4F8;display:flex;align-items:center;gap:12px;">
+          <div style="width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+            {% if attempt.success %}background:rgba(16,185,129,.1);color:#10B981;{% else %}background:rgba(239,68,68,.1);color:#EF4444;{% endif %}">
+            <i class="bi bi-{% if attempt.success %}check{% else %}x{% endif %}"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              {{ attempt.username|default:"—" }}
+            </div>
+            <div style="font-size:11px;color:#94A3B8;font-family:monospace;">{{ attempt.ip_address }}</div>
+          </div>
+          <div style="font-size:10px;color:#94A3B8;text-align:right;flex-shrink:0;">{{ attempt.attempted_at|timesince }} ago</div>
+        </div>
+        {% empty %}
+        <div style="padding:32px;text-align:center;color:#94A3B8;font-size:13px;">No login attempts recorded</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

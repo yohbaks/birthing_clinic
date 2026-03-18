@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Patients — BirthCare{% endblock %}
+{% block topbar_title %}Patient Records{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Patient Records</div>
+    <div class="page-subtitle">Manage and search all registered patients</div>
+  </div>
+  <a href="{% url 'patient_add' %}" class="btn-rose"><i class="bi bi-person-plus"></i> Register Patient</a>
+</div>
+
+<!-- FILTER BAR -->
+<div class="panel mb-3">
+  <div class="panel-body" style="padding:16px 20px;">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label">Search</label>
+        <div style="position:relative;">
+          <i class="bi bi-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94A3B8;"></i>
+          <input type="text" name="q" value="{{ query }}" class="form-control" style="padding-left:36px;" placeholder="Name, record no., phone, address...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Risk Level</label>
+        <select name="risk" class="form-select">
+          <option value="">All Risk Levels</option>
+          <option value="low" {% if risk_filter == 'low' %}selected{% endif %}>Low Risk</option>
+          <option value="moderate" {% if risk_filter == 'moderate' %}selected{% endif %}>Moderate Risk</option>
+          <option value="high" {% if risk_filter == 'high' %}selected{% endif %}>High Risk</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn-rose w-100"><i class="bi bi-search"></i> Filter</button>
+      </div>
+      <div class="col-md-2">
+        <a href="{% url 'patient_list' %}" class="btn-outline-rose w-100" style="justify-content:center;">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-icon"><i class="bi bi-person-heart"></i></div>
+    <h5>Patients ({{ patients|length }})</h5>
+  </div>
+  <div class="table-responsive">
+    <table class="table dt-table mb-0">
+      <thead>
+        <tr>
+          <th>Record No.</th>
+          <th>Patient Name</th>
+          <th>Age</th>
+          <th>Contact</th>
+          <th>G/P/A</th>
+          <th>EDD</th>
+          <th>Risk</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in patients %}
+        <tr>
+          <td><span style="font-family:monospace;font-weight:700;color:#2ABFBF;font-size:12px;">{{ p.record_number }}</span></td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#E8527A,#C23860);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">{{ p.full_name|first|upper }}</div>
+              <div>
+                <div style="font-weight:600;font-size:13px;">{{ p.full_name }}</div>
+                <div style="font-size:11px;color:#94A3B8;">{{ p.address|truncatechars:30 }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-weight:600;">{{ p.age }}</td>
+          <td style="font-size:13px;">{{ p.contact_number }}</td>
+          <td><span style="font-weight:700;font-size:13px;">G{{ p.gravida }} P{{ p.para }} A{{ p.abortion_history }}</span></td>
+          <td style="font-size:12px;">{% if p.edd %}{{ p.edd|date:"M d, Y" }}{% else %}<span style="color:#CBD5E1;">—</span>{% endif %}</td>
+          <td>
+            {% if p.risk_level == 'high' %}<span class="status-badge badge-risk-high">HIGH RISK</span>
+            {% elif p.risk_level == 'moderate' %}<span class="status-badge badge-risk-mod">MODERATE</span>
+            {% else %}<span class="status-badge badge-risk-low">LOW RISK</span>{% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'patient_profile' p.pk %}" class="btn btn-sm btn-light" title="View Profile"><i class="bi bi-eye"></i></a>
+              <a href="{% url 'patient_edit' p.pk %}" class="btn btn-sm btn-light" title="Edit"><i class="bi bi-pencil"></i></a>
+              <a href="{% url 'prenatal_add' %}?patient={{ p.pk }}" class="btn btn-sm btn-light" title="New Prenatal Visit"><i class="bi bi-activity"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center py-5 text-muted">No patients found. <a href="{% url 'patient_add' %}">Register the first patient</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

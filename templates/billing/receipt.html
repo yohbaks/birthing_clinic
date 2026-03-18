@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Receipt {{ bill.bill_number }}</title>
+<style>
+body{font-family:Arial,sans-serif;font-size:12px;max-width:350px;margin:0 auto;padding:20px;}
+.header{text-align:center;margin-bottom:16px;}
+.clinic-name{font-size:18px;font-weight:900;color:#1A2B4B;}
+.receipt-no{font-size:13px;color:#666;margin:4px 0;}
+.divider{border-top:1px dashed #ccc;margin:10px 0;}
+.items{width:100%;}
+.items th{font-size:10px;text-transform:uppercase;color:#888;padding:4px 0;text-align:left;}
+.items td{padding:4px 0;vertical-align:top;}
+.items td:last-child{text-align:right;}
+.total-row{font-weight:900;font-size:14px;}
+.payment-row{color:#10B981;}
+.balance-row{color:#EF4444;}
+.footer{text-align:center;margin-top:16px;font-size:10px;color:#999;}
+@media print{@page{margin:0;size:80mm auto;}body{padding:5mm;}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="clinic-name">🌸 BirthCare Clinic</div>
+  <div style="font-size:11px;color:#666;">Maternity & Lying-in Clinic</div>
+  <div class="receipt-no">OFFICIAL RECEIPT</div>
+</div>
+<div class="divider"></div>
+<div style="margin-bottom:8px;">
+  <div><strong>Patient:</strong> {{ bill.patient.full_name }}</div>
+  <div><strong>Record No:</strong> {{ bill.patient.record_number }}</div>
+  <div><strong>Bill No:</strong> {{ bill.bill_number }}</div>
+  <div><strong>Date:</strong> {{ bill.billing_date|date:"M d, Y" }}</div>
+</div>
+<div class="divider"></div>
+<table class="items" width="100%">
+  <tr><th>Item</th><th>Qty</th><th style="text-align:right;">Amount</th></tr>
+  {% for item in bill.bill_items.all %}
+  <tr><td>{{ item.description }}</td><td>{{ item.quantity }}</td><td style="text-align:right;">₱{{ item.total_price|floatformat:2 }}</td></tr>
+  {% endfor %}
+</table>
+<div class="divider"></div>
+<table width="100%">
+  <tr><td>Subtotal</td><td style="text-align:right;">₱{{ bill.subtotal|floatformat:2 }}</td></tr>
+  {% if bill.discount %}<tr><td style="color:#EF4444;">Discount</td><td style="text-align:right;color:#EF4444;">-₱{{ bill.discount|floatformat:2 }}</td></tr>{% endif %}
+  <tr class="total-row"><td>TOTAL</td><td style="text-align:right;">₱{{ bill.total_amount|floatformat:2 }}</td></tr>
+  {% for p in payments %}
+  <tr class="payment-row"><td>Payment ({{ p.get_payment_method_display }})</td><td style="text-align:right;">₱{{ p.amount|floatformat:2 }}</td></tr>
+  {% endfor %}
+  <tr class="balance-row"><td><strong>BALANCE</strong></td><td style="text-align:right;"><strong>₱{{ bill.balance|floatformat:2 }}</strong></td></tr>
+</table>
+<div class="divider"></div>
+{% for p in payments %}
+<div style="margin-bottom:4px;font-size:11px;">OR No: {{ p.receipt_number }} · {{ p.payment_date|date:"M d, Y H:i" }}</div>
+{% endfor %}
+<div class="footer">
+  Thank you for choosing BirthCare Clinic!<br>
+  This receipt is computer-generated and is valid without signature.
+</div>
+<div style="text-align:center;margin-top:12px;">
+  <button onclick="window.print()" style="padding:8px 20px;background:#E8527A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;">🖨 Print Receipt</button>
+</div>
+</body></html>

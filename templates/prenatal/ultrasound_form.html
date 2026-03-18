@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Add Ultrasound{% endblock %}
+{% block topbar_title %}Ultrasound Record{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'patient_profile' patient.pk %}">{{ patient.full_name }}</a> <i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>Add Ultrasound</span></div>
+<div class="page-header"><div class="page-header-left"><div class="page-title">Add Ultrasound Record</div><div class="page-subtitle">{{ patient.full_name }} · {{ patient.record_number }}</div></div></div>
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-camera"></i></div><h5>Ultrasound Details</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Date of Ultrasound *</label><input type="date" name="date" class="form-control" required></div>
+          <div class="col-md-6"><label class="form-label">GA by Ultrasound</label><input type="number" name="ga_by_ultrasound" step="0.1" min="0" class="form-control" placeholder="e.g. 28.3 (weeks)"></div>
+          <div class="col-md-6"><label class="form-label">Link to Prenatal Visit</label>
+            <select name="visit" class="form-select">
+              <option value="">— None —</option>
+              {% for v in visits %}<option value="{{ v.pk }}">{{ v.visit_date|date:"M d, Y" }} (GA {{ v.gestational_age_weeks }}w)</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Done By / Radiologist</label><input type="text" name="done_by" class="form-control" placeholder="Name of attending radiologist"></div>
+          <div class="col-12"><label class="form-label">Ultrasound Findings *</label><textarea name="findings" class="form-control" rows="5" required placeholder="Enter detailed ultrasound findings..."></textarea></div>
+          <div class="col-12"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-body">
+        <div style="background:rgba(42,191,191,.06);border:1px solid rgba(42,191,191,.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:12.5px;color:#0F766E;"><i class="bi bi-info-circle me-2"></i>Ultrasound records are linked to the patient's permanent medical record.</div>
+        <button type="submit" class="btn-teal w-100" style="justify-content:center;padding:12px;"><i class="bi bi-camera"></i> Save Ultrasound Record</button>
+        <a href="{% url 'patient_profile' patient.pk %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

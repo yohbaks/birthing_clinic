@@ -1,0 +1,16 @@
+# BirthCare Clinic Management System — Python Dependencies
+
+# Core framework
+Django>=6.0
+
+# Image handling (staff profile photos, media uploads)
+Pillow>=10.0
+
+# PDF generation (patient summaries, delivery certificates, SOA/receipts)
+reportlab>=4.0
+
+# Optional: PostgreSQL support for production
+# psycopg2-binary>=2.9
+
+# Optional: WeasyPrint for HTML-to-PDF (alternative PDF backend)
+# WeasyPrint>=60.0

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}New Purchase Order{% endblock %}
+{% block topbar_title %}New Purchase Order{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><div class="page-title">Create Purchase Order</div></div></div>
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-cart3"></i></div><h5>Order Details</h5></div>
+      <div class="panel-body">
+        <div class="row g-3 mb-3">
+          <div class="col-md-6"><label class="form-label">Supplier *</label><select name="supplier" class="form-select" required><option value="">Select Supplier</option>{% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}</select></div>
+          <div class="col-md-3"><label class="form-label">Order Date *</label><input type="date" name="order_date" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">Expected Delivery</label><input type="date" name="expected_delivery" class="form-control"></div>
+          <div class="col-12"><label class="form-label">Notes</label><input type="text" name="notes" class="form-control" placeholder="Special instructions..."></div>
+        </div>
+        <div class="form-section-title">Order Items</div>
+        <div id="po-items">
+          <div class="item-row" style="background:#F8FAFB;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid #EEF2F7;">
+            <div class="row g-2">
+              <div class="col-md-5"><select name="item[]" class="form-select"><option value="">Select Item</option>{% for i in items %}<option value="{{ i.pk }}">{{ i.name }} ({{ i.item_code }})</option>{% endfor %}</select></div>
+              <div class="col-md-3"><input type="number" name="qty_ordered[]" class="form-control" placeholder="Qty" min="0.01" step="0.01"></div>
+              <div class="col-md-3"><input type="number" name="unit_cost[]" class="form-control" placeholder="Unit Cost ₱" min="0" step="0.01"></div>
+              <div class="col-md-1"><button type="button" onclick="this.closest('.item-row').remove()" class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button></div>
+            </div>
+          </div>
+        </div>
+        <button type="button" onclick="addPORow()" class="btn-outline-rose mt-2" style="font-size:12px;padding:6px 14px;"><i class="bi bi-plus"></i> Add Item</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel"><div class="panel-body">
+      <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-check-circle"></i> Create PO</button>
+      <a href="{% url 'po_list' %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+    </div></div>
+  </div>
+</div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+const itemOptions = `{% for i in items %}<option value="{{ i.pk }}">{{ i.name }} ({{ i.item_code }})</option>{% endfor %}`;
+function addPORow(){
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.style.cssText = 'background:#F8FAFB;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid #EEF2F7;';
+  div.innerHTML = `<div class="row g-2"><div class="col-md-5"><select name="item[]" class="form-select"><option value="">Select Item</option>${itemOptions}</select></div><div class="col-md-3"><input type="number" name="qty_ordered[]" class="form-control" placeholder="Qty" min="0.01" step="0.01"></div><div class="col-md-3"><input type="number" name="unit_cost[]" class="form-control" placeholder="Unit Cost ₱" min="0" step="0.01"></div><div class="col-md-1"><button type="button" onclick="this.closest('.item-row').remove()" class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button></div></div>`;
+  document.getElementById('po-items').appendChild(div);
+}
+</script>
+{% endblock %}

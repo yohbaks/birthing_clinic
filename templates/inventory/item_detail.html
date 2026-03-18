@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}{{ item.name }}{% endblock %}
+{% block topbar_title %}Item Detail{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'inventory_list' %}">Inventory</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>{{ item.name }}</span></div>
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">{{ item.name }}</div><div class="page-subtitle">{{ item.item_code }} · {{ item.category.name|default:"Uncategorized" }}</div></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'stock_in' %}" class="btn-teal"><i class="bi bi-arrow-down-circle"></i> Stock In</a>
+    <a href="{% url 'item_edit' item.pk %}" class="btn-outline-rose"><i class="bi bi-pencil"></i> Edit</a>
+  <form method="post" action="{% url 'item_toggle_active' item.pk %}" style="display:inline;">{% csrf_token %}
+    {% if item.is_active %}
+    <button type="submit" style="background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.3);color:#DC2626;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;"><i class="bi bi-archive"></i> Deactivate</button>
+    {% else %}
+    <button type="submit" style="background:rgba(16,185,129,.1);border:1.5px solid rgba(16,185,129,.3);color:#059669;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;"><i class="bi bi-check-circle"></i> Reactivate</button>
+    {% endif %}
+  </form>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="panel mb-3">
+      <div class="panel-body" style="text-align:center;padding:28px;">
+        <div style="font-size:56px;font-weight:900;{% if item.is_out_of_stock %}color:#EF4444;{% elif item.is_low_stock %}color:#F59E0B;{% else %}color:#10B981;{% endif %}">{{ item.quantity_on_hand }}</div>
+        <div style="font-size:14px;color:#64748B;margin-top:4px;">{{ item.get_unit_display }} on hand</div>
+        <div style="margin-top:16px;display:flex;justify-content:center;gap:20px;">
+          <div style="text-align:center;"><div style="font-size:16px;font-weight:700;">{{ item.minimum_stock_level }}</div><div style="font-size:11px;color:#94A3B8;">Min Level</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;font-weight:700;">{{ item.reorder_level }}</div><div style="font-size:11px;color:#94A3B8;">Reorder At</div></div>
+        </div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #F0F4F8;display:flex;justify-content:space-between;">
+          <div style="text-align:left;"><div style="font-size:12px;color:#94A3B8;">Cost Price</div><div style="font-weight:700;">₱{{ item.cost_price }}</div></div>
+          <div style="text-align:right;"><div style="font-size:12px;color:#94A3B8;">Selling Price</div><div style="font-weight:700;color:#E8527A;">₱{{ item.selling_price }}</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-calendar-x"></i></div><h5>Batches</h5></div>
+      <div class="panel-body">
+        {% for b in batches %}
+        <div style="padding:8px 0;border-bottom:1px solid #F0F4F8;font-size:12px;">
+          <div style="font-weight:600;">Batch {{ b.batch_number|default:"—" }} · {{ b.quantity }} units</div>
+          <div style="color:{% if b.is_near_expiry %}#F59E0B{% else %}#94A3B8{% endif %};">Exp: {{ b.expiry_date|date:"M d, Y"|default:"No expiry" }}{% if b.is_near_expiry %} ⚠{% endif %}</div>
+        </div>
+        {% empty %}<div style="color:#94A3B8;font-size:13px;text-align:center;padding:16px 0;">No batches on record</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-clock-history"></i></div><h5>Transaction History</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:12px;">
+          <thead><tr><th>Date</th><th>Type</th><th>Quantity</th><th>Balance</th><th>Reference</th><th>By</th></tr></thead>
+          <tbody>
+            {% for t in transactions %}
+            <tr>
+              <td style="white-space:nowrap;">{{ t.created_at|date:"M d, Y H:i" }}</td>
+              <td>
+                {% if t.transaction_type == "stock_in" %}<span class="status-badge badge-completed" style="font-size:10px;">IN</span>
+                {% elif t.transaction_type == "stock_out" %}<span class="status-badge badge-unpaid" style="font-size:10px;">OUT</span>
+                {% else %}<span class="status-badge badge-partial" style="font-size:10px;">{{ t.get_transaction_type_display|upper }}</span>{% endif %}
+              </td>
+              <td style="font-weight:700;">{% if t.transaction_type == "stock_out" %}-{% endif %}{{ t.quantity }}</td>
+              <td style="font-weight:700;">{{ t.balance_after }}</td>
+              <td style="color:#64748B;">{{ t.reference|default:"—"|truncatechars:20 }}</td>
+              <td>{{ t.created_by.username|default:"—" }}</td>
+            </tr>
+            {% empty %}<tr><td colspan="6" class="text-center text-muted py-3">No transactions yet</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

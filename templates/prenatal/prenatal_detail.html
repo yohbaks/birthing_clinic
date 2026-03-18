@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Prenatal Visit{% endblock %}
+{% block topbar_title %}Prenatal Visit{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'prenatal_list' %}">Prenatal</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>Visit Detail</span></div>
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">Prenatal Visit — {{ visit.visit_date|date:"F j, Y" }}</div><div class="page-subtitle">{{ visit.patient.full_name }} · GA {{ visit.gestational_age_weeks }} weeks</div></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'prenatal_edit' visit.pk %}" class="btn-outline-rose"><i class="bi bi-pencil"></i> Edit</a>
+    <a href="{% url 'pdf_prenatal' visit.pk %}" class="btn-teal" target="_blank"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <a href="{% url 'patient_profile' visit.patient.pk %}" class="btn-teal"><i class="bi bi-person"></i> Patient</a>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-heart-pulse"></i></div><h5>Vitals</h5></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:800;color:#E8527A;">{{ visit.weight }}</div><div style="font-size:11px;color:#94A3B8;">kg Weight</div></div>
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:16px;font-weight:800;{% if visit.is_bp_high %}color:#EF4444;{% else %}color:#1A2B4B;{% endif %}">{{ visit.bp_display }}</div><div style="font-size:11px;color:#94A3B8;">BP mmHg</div></div>
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:800;color:#2ABFBF;">{{ visit.temperature }}</div><div style="font-size:11px;color:#94A3B8;">°C Temp</div></div>
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:800;color:#8B5CF6;">{{ visit.fetal_heart_rate|default:"—" }}</div><div style="font-size:11px;color:#94A3B8;">bpm FHR</div></div>
+        </div>
+        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="padding:10px;background:#F8FAFB;border-radius:8px;"><div style="font-size:10px;color:#94A3B8;">Fundal Ht</div><div style="font-weight:700;">{{ visit.fundal_height|default:"—" }} cm</div></div>
+          <div style="padding:10px;background:#F8FAFB;border-radius:8px;"><div style="font-size:10px;color:#94A3B8;">GA</div><div style="font-weight:700;">{{ visit.gestational_age_weeks }}w</div></div>
+        </div>
+        {% if visit.follow_up_date %}<div style="margin-top:12px;padding:10px 14px;background:rgba(42,191,191,.08);border-radius:8px;border-left:3px solid #2ABFBF;"><span style="font-size:12px;color:#0F766E;font-weight:600;"><i class="bi bi-calendar-check"></i> Follow-up: {{ visit.follow_up_date|date:"F j, Y" }}</span></div>{% endif %}
+        <div style="margin-top:12px;">{% if visit.risk_flag == "high_risk" %}<span class="status-badge badge-risk-high w-100" style="justify-content:center;">⚠ HIGH RISK</span>{% elif visit.risk_flag == "borderline" %}<span class="status-badge badge-risk-mod w-100" style="justify-content:center;">BORDERLINE</span>{% else %}<span class="status-badge badge-risk-low w-100" style="justify-content:center;">NORMAL</span>{% endif %}</div>
+      </div>
+    </div>
+    <!-- Lab Requests -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6;"><i class="bi bi-flask"></i></div><h5>Lab Requests</h5></div>
+      <div style="max-height:260px;overflow-y:auto;">
+        {% for lr in lab_requests %}
+        <div style="padding:12px 16px;border-bottom:1px solid #F0F4F8;">
+          <div style="font-weight:700;font-size:13px;">{{ lr.test_name }}</div>
+          {% if lr.result %}<div style="font-size:12px;color:#10B981;margin-top:3px;"><i class="bi bi-check-circle-fill me-1"></i>{{ lr.result }}</div>{% else %}<div style="font-size:11px;color:#94A3B8;margin-top:3px;">Pending result</div>{% endif %}
+          {% if lr.result_date %}<div style="font-size:11px;color:#64748B;">{{ lr.result_date|date:"M d, Y" }}</div>{% endif %}
+        </div>
+        {% empty %}<div style="padding:24px;text-align:center;color:#94A3B8;font-size:13px;"><i class="bi bi-flask" style="font-size:24px;opacity:.3;display:block;margin-bottom:6px;"></i>No lab requests</div>{% endfor %}
+      </div>
+      <div style="padding:12px 16px;border-top:1px solid #F0F4F8;">
+        <button onclick="document.getElementById('labModal').style.display='flex'" class="btn-outline-rose w-100" style="justify-content:center;font-size:12px;padding:7px;"><i class="bi bi-plus"></i> Add Lab Request</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-journal-medical"></i></div><h5>Clinical Notes</h5></div>
+      <div class="panel-body">
+        {% if visit.chief_complaint %}<div class="mb-3"><div class="form-section-title">Chief Complaint</div><p style="font-size:13px;">{{ visit.chief_complaint }}</p></div>{% endif %}
+        <div class="mb-3"><div class="form-section-title">Assessment</div><p style="font-size:13px;">{{ visit.assessment }}</p></div>
+        <div class="mb-3"><div class="form-section-title">Plan</div><p style="font-size:13px;">{{ visit.plan }}</p></div>
+        {% if visit.prescribed_medicines %}<div class="mb-3"><div class="form-section-title">Prescribed Medicines</div><p style="font-size:13px;white-space:pre-line;">{{ visit.prescribed_medicines }}</p></div>{% endif %}
+        {% if visit.notes %}<div><div class="form-section-title">Notes</div><p style="font-size:13px;">{{ visit.notes }}</p></div>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lab Request Modal -->
+<div id="labModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <h5 style="font-weight:800;color:#1A2B4B;margin-bottom:20px;"><i class="bi bi-flask me-2" style="color:#8B5CF6;"></i>Add Lab Request</h5>
+    <form method="post" action="{% url 'add_lab_request' visit.pk %}">
+      {% csrf_token %}
+      <div class="mb-3"><label class="form-label">Test Name *</label><input type="text" name="test_name" class="form-control" placeholder="e.g. CBC, Urinalysis, Blood type" required></div>
+      <div class="mb-3"><label class="form-label">Result (if available)</label><input type="text" name="result" class="form-control" placeholder="Leave blank if pending"></div>
+      <div class="mb-3"><label class="form-label">Result Date</label><input type="date" name="result_date" class="form-control"></div>
+      <div class="mb-3"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-rose" style="flex:1;justify-content:center;"><i class="bi bi-check-circle"></i> Add</button>
+        <button type="button" onclick="document.getElementById('labModal').style.display='none'" class="btn-outline-rose" style="flex:1;justify-content:center;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

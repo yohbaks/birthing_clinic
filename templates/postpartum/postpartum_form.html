@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block title %}{% if visit %}Edit{% else %}New{% endif %} Postpartum Visit{% endblock %}
+{% block topbar_title %}Postpartum Care{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2">
+  <a href="{% url 'postpartum_list' %}">Postpartum</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i>
+  <span>{% if visit %}Edit Visit{% else %}New Visit{% endif %}</span>
+</div>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">{% if visit %}Edit Postpartum Visit{% else %}Record Postpartum Visit{% endif %}</div>
+    {% if visit %}<div class="page-subtitle">{{ visit.patient.full_name }} — {{ visit.get_visit_type_display }}</div>{% endif %}
+  </div>
+</div>
+
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+  <!-- LEFT: Main form -->
+  <div class="col-lg-8">
+
+    <!-- Patient & Visit Info -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-person-heart"></i></div><h5>Patient & Visit Information</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Patient <span style="color:#E8527A">*</span></label>
+            <select name="patient" class="form-select" required id="patient-sel" {% if visit %}disabled{% endif %}>
+              <option value="">Select patient...</option>
+              {% for p in patients %}
+              <option value="{{ p.pk }}" {% if visit and visit.patient.pk == p.pk %}selected{% elif patient_id == p.pk|stringformat:"i" %}selected{% endif %}>
+                {{ p.full_name }} ({{ p.record_number }})
+              </option>
+              {% endfor %}
+            </select>
+            {% if visit %}<input type="hidden" name="patient" value="{{ visit.patient.pk }}">{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Linked Delivery Record</label>
+            <select name="delivery_record" class="form-select" id="delivery-sel">
+              <option value="">— None —</option>
+              {% for d in deliveries %}
+              <option value="{{ d.pk }}" {% if visit and visit.delivery_record_id == d.pk %}selected{% elif delivery_id == d.pk|stringformat:"i" %}selected{% endif %}>
+                {{ d.admission_datetime|date:"M d, Y" }} {% if d.delivery_type %}· {{ d.get_delivery_type_display }}{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Visit Type <span style="color:#E8527A">*</span></label>
+            <select name="visit_type" class="form-select" required>
+              {% for val,label in visit_types %}
+              <option value="{{ val }}" {% if visit and visit.visit_type == val %}selected{% elif not visit and val == '6week' %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Visit Date <span style="color:#E8527A">*</span></label>
+            <input type="date" name="visit_date" class="form-control" value="{{ visit.visit_date|date:'Y-m-d'|default:today }}" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Days Postpartum</label>
+            <input type="number" name="days_postpartum" class="form-control" value="{{ visit.days_postpartum|default:'' }}" min="0" max="180" id="days-pp">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vitals -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-heart-pulse"></i></div><h5>Vital Signs</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-3"><label class="form-label">BP Systolic</label><input type="number" name="bp_systolic" class="form-control" value="{{ visit.blood_pressure_systolic|default:'' }}" placeholder="mmHg"></div>
+          <div class="col-md-3"><label class="form-label">BP Diastolic</label><input type="number" name="bp_diastolic" class="form-control" value="{{ visit.blood_pressure_diastolic|default:'' }}" placeholder="mmHg"></div>
+          <div class="col-md-3"><label class="form-label">Temperature (°C)</label><input type="number" name="temperature" step="0.1" class="form-control" value="{{ visit.temperature|default:'' }}"></div>
+          <div class="col-md-3"><label class="form-label">Weight (kg)</label><input type="number" name="weight" step="0.1" class="form-control" value="{{ visit.weight|default:'' }}"></div>
+          <div class="col-md-3"><label class="form-label">Pulse (bpm)</label><input type="number" name="pulse" class="form-control" value="{{ visit.pulse|default:'' }}"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Maternal Assessment -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6;"><i class="bi bi-clipboard2-pulse"></i></div><h5>Maternal Assessment</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Uterine Involution</label><input type="text" name="uterine_involution" class="form-control" value="{{ visit.uterine_involution|default:'' }}" placeholder="e.g. Well-involuted, not palpable"></div>
+          <div class="col-md-6"><label class="form-label">Lochia</label><input type="text" name="lochia" class="form-control" value="{{ visit.lochia|default:'' }}" placeholder="Color, amount, odor"></div>
+          <div class="col-md-6"><label class="form-label">Wound / Episiotomy Status</label><input type="text" name="wound_status" class="form-control" value="{{ visit.wound_status|default:'' }}" placeholder="Healing well, intact, signs of infection..."></div>
+          <div class="col-md-6"><label class="form-label">Breast / Perineum Condition</label><input type="text" name="breast_condition" class="form-control" value="{{ visit.breast_condition|default:'' }}" placeholder="Engorgement, cracking, normal..."></div>
+          <div class="col-md-6">
+            <label class="form-label">Breastfeeding Status</label>
+            <select name="breastfeeding" class="form-select">
+              {% for val,label in breastfeeding_choices %}
+              <option value="{{ val }}" {% if visit and visit.breastfeeding == val %}selected{% elif not visit and val == 'exclusive' %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mental Health (EPDS) -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-emoji-neutral"></i></div>
+        <h5>Mental Health Screening <span style="font-size:11px;color:#94A3B8;font-weight:400;">(Edinburgh Postnatal Depression Scale)</span></h5>
+      </div>
+      <div class="panel-body">
+        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#92400E;">
+          <strong>EPDS Scoring:</strong> Ask the patient to complete the 10-question Edinburgh scale. Total score 0–30. Score ≥10 indicates possible postnatal depression — refer for further assessment.
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">EPDS Total Score (0–30)</label>
+            <input type="number" name="mood_score" class="form-control" min="0" max="30" value="{{ visit.mood_score|default:'' }}" id="epds-score">
+            <small id="epds-flag" style="font-size:11px;font-weight:700;"></small>
+          </div>
+          <div class="col-md-8"><label class="form-label">Mental Health Notes</label><textarea name="mood_notes" class="form-control" rows="2" placeholder="Observations, referral notes...">{{ visit.mood_notes|default:'' }}</textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Family Planning -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-shield-heart"></i></div><h5>Family Planning Counseling</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-12">
+            <div class="d-flex gap-4">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" name="fp_counseled" {% if visit and visit.fp_counseled %}checked{% endif %}> FP Counseling Done</label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" name="fp_method_provided" {% if visit and visit.fp_method_provided %}checked{% endif %}> Method Provided/Prescribed</label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">FP Method Chosen</label>
+            <select name="fp_method_chosen" class="form-select">
+              {% for val,label in fp_choices %}
+              <option value="{{ val }}" {% if visit and visit.fp_method_chosen == val %}selected{% elif not visit and val == 'none' %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Newborn Check -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-emoji-smile"></i></div><h5>Newborn Assessment</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label">Newborn Weight (g)</label><input type="number" name="newborn_weight" class="form-control" value="{{ visit.newborn_weight|default:'' }}" placeholder="grams"></div>
+          <div class="col-md-8"><label class="form-label">Newborn Condition</label><input type="text" name="newborn_condition" class="form-control" value="{{ visit.newborn_condition|default:'' }}" placeholder="Active, well-hydrated, no jaundice..."></div>
+          <div class="col-md-12"><label class="form-label">Newborn Feeding</label><input type="text" name="newborn_feeding" class="form-control" value="{{ visit.newborn_feeding|default:'' }}" placeholder="Breastfeeding well, latch established, feeds every 2-3 hours..."></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clinical Notes -->
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-journal-medical"></i></div><h5>Clinical Notes</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label">Chief Complaint</label><textarea name="chief_complaint" class="form-control" rows="2">{{ visit.chief_complaint|default:'' }}</textarea></div>
+          <div class="col-12"><label class="form-label">Assessment</label><textarea name="assessment" class="form-control" rows="2">{{ visit.assessment|default:'' }}</textarea></div>
+          <div class="col-12"><label class="form-label">Plan</label><textarea name="plan" class="form-control" rows="2">{{ visit.plan|default:'' }}</textarea></div>
+          <div class="col-md-6"><label class="form-label">Prescribed Medicines</label><textarea name="prescribed_medicines" class="form-control" rows="2">{{ visit.prescribed_medicines|default:'' }}</textarea></div>
+          <div class="col-md-6"><label class="form-label">Referral</label><input type="text" name="referral" class="form-control" value="{{ visit.referral|default:'' }}" placeholder="Referred to: hospital / specialist"><label class="form-label mt-2">Follow-up Date</label><input type="date" name="follow_up_date" class="form-control" value="{{ visit.follow_up_date|date:'Y-m-d'|default:'' }}"></div>
+          <div class="col-12"><label class="form-label">Additional Notes</label><textarea name="notes" class="form-control" rows="2">{{ visit.notes|default:'' }}</textarea></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: Summary panel -->
+  <div class="col-lg-4">
+    <div class="panel mb-3" style="position:sticky;top:70px;">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-check2-square"></i></div><h5>Postpartum Checklist</h5></div>
+      <div class="panel-body">
+        <div style="font-size:12px;color:#64748B;margin-bottom:14px;line-height:1.7;">
+          <div style="font-weight:700;margin-bottom:6px;color:#1A2B4B;">6-Week Visit Should Cover:</div>
+          <div>✓ BP and temperature check</div>
+          <div>✓ Uterine involution assessment</div>
+          <div>✓ Wound/episiotomy inspection</div>
+          <div>✓ Breastfeeding support</div>
+          <div>✓ EPDS screening (score ≥10 → refer)</div>
+          <div>✓ Family planning counseling</div>
+          <div>✓ Newborn weight and condition</div>
+          <div>✓ Immunization status (mother + baby)</div>
+          <div>✓ Return to work / activity counseling</div>
+        </div>
+        <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px;font-size:11px;color:#065F46;margin-bottom:16px;">
+          <strong>DOH Standard:</strong> Postpartum visits required at 24hr, Day 3–7, and 6 weeks per MNCHN guidelines.
+        </div>
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-check-circle"></i> Save Visit Record</button>
+        <a href="{% url 'postpartum_list' %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// EPDS score color feedback
+const epdsInput = document.getElementById('epds-score');
+const epdsFlag  = document.getElementById('epds-flag');
+if (epdsInput) {
+  epdsInput.addEventListener('input', function() {
+    const s = parseInt(this.value);
+    if (!isNaN(s)) {
+      if (s >= 10) {
+        epdsFlag.textContent = '⚠️ Score ≥10 — Possible postnatal depression. Refer for assessment.';
+        epdsFlag.style.color = '#EF4444';
+        this.style.borderColor = '#EF4444';
+      } else {
+        epdsFlag.textContent = '✓ Score < 10 — Low risk';
+        epdsFlag.style.color = '#10B981';
+        this.style.borderColor = '#10B981';
+      }
+    }
+  });
+}
+
+// Auto-calculate days postpartum from linked delivery
+const deliverySel = document.getElementById('delivery-sel');
+const daysPP = document.getElementById('days-pp');
+const visitDate = document.querySelector('input[name="visit_date"]');
+// Pass delivery dates from context
+const deliveryDates = {
+  {% for d in deliveries %}
+  "{{ d.pk }}": "{{ d.delivery_datetime|date:'Y-m-d'|default:d.admission_datetime|date:'Y-m-d' }}",
+  {% endfor %}
+};
+function calcDaysPP() {
+  const did = deliverySel ? deliverySel.value : '';
+  const vd  = visitDate ? visitDate.value : '';
+  if (did && vd && deliveryDates[did]) {
+    const del  = new Date(deliveryDates[did]);
+    const vis  = new Date(vd);
+    const days = Math.round((vis - del) / (1000*60*60*24));
+    if (days >= 0 && days <= 180 && daysPP) daysPP.value = days;
+  }
+}
+if (deliverySel) deliverySel.addEventListener('change', calcDaysPP);
+if (visitDate)   visitDate.addEventListener('change', calcDaysPP);
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Reactivate Patient{% endblock %}
+{% block topbar_title %}Reactivate Patient{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="panel" style="border-top:3px solid #10B981;">
+      <div class="panel-body" style="text-align:center;padding:36px;">
+        <div style="font-size:48px;margin-bottom:12px;">✅</div>
+        <h4 style="font-weight:800;color:#1A2B4B;margin-bottom:8px;">Reactivate Patient?</h4>
+        <p style="font-size:14px;color:#64748B;margin-bottom:24px;"><strong>{{ patient.full_name }}</strong> ({{ patient.record_number }}) will be restored to active patient lists.</p>
+        <form method="post">{% csrf_token %}
+          <div class="d-flex gap-2 justify-content-center">
+            <button type="submit" style="background:#10B981;color:#fff;border:none;padding:11px 24px;border-radius:9px;font-weight:700;cursor:pointer;"><i class="bi bi-person-check me-1"></i>Reactivate</button>
+            <a href="{% url 'inactive_patients' %}" class="btn-outline-rose" style="padding:10px 20px;">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

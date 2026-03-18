@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Create Bill from Delivery{% endblock %}
+{% block topbar_title %}Bill from Delivery{% endblock %}
+{% block extra_head %}
+<style>.item-row{background:#FAFBFC;border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid #EEF2F7;}</style>
+{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2">
+  <a href="{% url 'bill_list' %}">Billing</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i>
+  <a href="{% url 'delivery_detail' delivery.pk %}">{{ delivery.patient.full_name }}</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i>
+  <span>Create Bill</span>
+</div>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Create Bill from Delivery</div>
+    <div class="page-subtitle">{{ delivery.patient.full_name }} · Admitted {{ delivery.admission_datetime|date:"M d, Y" }}{% if delivery.delivery_type %} · {{ delivery.get_delivery_type_display }}{% endif %}</div>
+  </div>
+</div>
+
+<!-- Delivery summary banner -->
+<div style="background:linear-gradient(135deg,#1A2B4B,#2A3F6F);border-radius:14px;padding:18px 24px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:200px;">
+    <div style="color:rgba(255,255,255,.5);font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Patient</div>
+    <div style="font-weight:800;font-size:16px;color:#fff;">{{ delivery.patient.full_name }}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.5);">{{ delivery.patient.record_number }}</div>
+  </div>
+  {% if delivery.delivery_datetime %}
+  <div style="text-align:center;">
+    <div style="color:rgba(255,255,255,.5);font-size:11px;">Delivery</div>
+    <div style="font-weight:700;color:#2ABFBF;">{{ delivery.get_delivery_type_display|default:"—" }}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.5);">{{ delivery.delivery_datetime|date:"M d, Y H:i" }}</div>
+  </div>
+  {% endif %}
+  {% if delivery.newborns.count %}
+  <div style="text-align:center;">
+    <div style="color:rgba(255,255,255,.5);font-size:11px;">Newborns</div>
+    <div style="font-weight:700;color:#10B981;font-size:22px;">{{ delivery.newborns.count }}</div>
+  </div>
+  {% endif %}
+  {% if delivery.attending_midwife %}
+  <div style="text-align:center;">
+    <div style="color:rgba(255,255,255,.5);font-size:11px;">Midwife</div>
+    <div style="font-weight:600;color:#fff;font-size:13px;">{{ delivery.attending_midwife.get_full_name }}</div>
+  </div>
+  {% endif %}
+</div>
+
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-receipt"></i></div><h5>Bill Items</h5></div>
+      <div class="panel-body">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4"><label class="form-label">Discount (₱)</label><input type="number" name="discount" id="discount-input" class="form-control" value="0" step="0.01"></div>
+          <div class="col-md-8"><label class="form-label">Discount Reason</label><input type="text" name="discount_reason" class="form-control" placeholder="PhilHealth, Indigent, Staff benefit..."></div>
+          <div class="col-12"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2" placeholder="Additional billing notes..."></textarea></div>
+        </div>
+        <div class="form-section-title">Bill Items — Edit prices for your clinic's rates</div>
+        <div id="bill-items">
+          {% for item in preset_items %}
+          <div class="item-row">
+            <div class="row g-2">
+              <div class="col-md-4"><input type="text" name="description[]" class="form-control" value="{{ item.desc }}" required></div>
+              <div class="col-md-3">
+                <select name="item_type[]" class="form-select">
+                  <option value="service" {% if item.type == "service" %}selected{% endif %}>Service</option>
+                  <option value="medicine" {% if item.type == "medicine" %}selected{% endif %}>Medicine</option>
+                  <option value="supply" {% if item.type == "supply" %}selected{% endif %}>Supply</option>
+                  <option value="room" {% if item.type == "room" %}selected{% endif %}>Room/Board</option>
+                  <option value="procedure" {% if item.type == "procedure" %}selected{% endif %}>Procedure</option>
+                  <option value="package" {% if item.type == "package" %}selected{% endif %}>Package</option>
+                </select>
+              </div>
+              <div class="col-md-2"><input type="number" name="quantity[]" class="form-control qty-input" value="{{ item.qty }}" step="0.01" min="0.01"></div>
+              <div class="col-md-2"><input type="number" name="unit_price[]" class="form-control price-input" value="{{ item.price }}" step="0.01" placeholder="₱"></div>
+              <div class="col-md-1"><button type="button" onclick="removeRow(this)" class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" onclick="addRow()" class="btn-outline-rose mt-2" style="font-size:12px;padding:6px 14px;"><i class="bi bi-plus"></i> Add Item</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-calculator"></i></div><h5>Summary</h5></div>
+      <div class="panel-body">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;"><span>Subtotal</span><span id="subtotal" style="font-weight:700;">₱0.00</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:13px;color:#EF4444;"><span>Discount</span><span id="disc-display">₱0.00</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:20px;font-size:18px;font-weight:900;color:#1A2B4B;border-top:2px solid #F0F4F8;padding-top:14px;"><span>TOTAL</span><span id="total">₱0.00</span></div>
+        <div style="background:rgba(42,191,191,.06);border:1px solid rgba(42,191,191,.2);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:#0F766E;">
+          <i class="bi bi-info-circle me-1"></i> This bill is pre-linked to delivery record <strong>#{{ delivery.pk }}</strong> and patient <strong>{{ delivery.patient.full_name }}</strong>.
+        </div>
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-receipt"></i> Create Bill</button>
+        <a href="{% url 'delivery_detail' delivery.pk %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+function calcTotal(){
+  let sub=0;
+  document.querySelectorAll('.item-row').forEach(r=>{
+    const q=parseFloat(r.querySelector('.qty-input').value)||0;
+    const p=parseFloat(r.querySelector('.price-input').value)||0;
+    sub+=q*p;
+  });
+  const disc=parseFloat(document.getElementById('discount-input').value)||0;
+  document.getElementById('subtotal').textContent='₱'+sub.toFixed(2);
+  document.getElementById('disc-display').textContent='₱'+disc.toFixed(2);
+  document.getElementById('total').textContent='₱'+(sub-disc).toFixed(2);
+}
+function addRow(){
+  const r=document.querySelector('.item-row').cloneNode(true);
+  r.querySelectorAll('input').forEach(i=>i.value='');
+  r.querySelector('.qty-input').value='1';
+  document.getElementById('bill-items').appendChild(r);
+}
+function removeRow(btn){
+  if(document.querySelectorAll('.item-row').length>1)btn.closest('.item-row').remove();
+  calcTotal();
+}
+document.addEventListener('input',calcTotal);
+calcTotal();
+</script>
+{% endblock %}

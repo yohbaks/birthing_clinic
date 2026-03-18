@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — BirthCare{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Good day, {{ request.user.first_name|default:request.user.username }}! 👋</div>
+    <div class="page-subtitle">{{ today|date:"l, F j, Y" }} &nbsp;·&nbsp; BirthCare Clinic Overview</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'patient_add' %}" class="btn-rose"><i class="bi bi-person-plus"></i> New Patient</a>
+    <a href="{% url 'delivery_admit' %}" class="btn-teal"><i class="bi bi-heart-pulse"></i> Admit Patient</a>
+  </div>
+</div>
+
+<!-- STAT CARDS ROW 1 -->
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card card-rose">
+      <div class="card-icon"><i class="bi bi-person-heart"></i></div>
+      <div class="stat-value">{{ total_patients }}</div>
+      <div class="stat-label">Total Patients</div>
+      <div class="stat-sub">Active records</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card card-amber">
+      <div class="card-icon"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="stat-value">{{ high_risk }}</div>
+      <div class="stat-label">High Risk</div>
+      <div class="stat-sub">Needs monitoring</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card card-teal">
+      <div class="card-icon"><i class="bi bi-calendar-check"></i></div>
+      <div class="stat-value">{{ today_appointments }}</div>
+      <div class="stat-label">Today's Appts</div>
+      <div class="stat-sub">Confirmed</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card card-purple">
+      <div class="card-icon"><i class="bi bi-heart-pulse"></i></div>
+      <div class="stat-value">{{ month_deliveries }}</div>
+      <div class="stat-label">Deliveries</div>
+      <div class="stat-sub">This month</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card card-green">
+      <div class="card-icon"><i class="bi bi-emoji-smile"></i></div>
+      <div class="stat-value">{{ month_newborns }}</div>
+      <div class="stat-label">Newborns</div>
+      <div class="stat-sub">This month</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card card-navy">
+      <div class="card-icon"><i class="bi bi-cash-coin"></i></div>
+      <div class="stat-value" style="font-size:22px;">₱{{ month_income|floatformat:0 }}</div>
+      <div class="stat-label">Income</div>
+      <div class="stat-sub">This month</div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERT ROW -->
+<div class="row g-3 mb-3">
+  {% if high_risk %}
+  <div class="col-md-4">
+    <div class="high-risk-banner">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <div><strong>{{ high_risk }} High-Risk</strong> patient{{ high_risk|pluralize }} require close monitoring</div>
+      <a href="{% url 'patient_list' %}?risk=high" class="ms-auto btn-outline-rose" style="font-size:12px;padding:4px 12px;">View</a>
+    </div>
+  </div>
+  {% endif %}
+  {% if alert_low_stock %}
+  <div class="col-md-4">
+    <div style="background:rgba(245,158,11,.08);border:1.5px solid rgba(245,158,11,.25);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;color:#92400E;font-weight:600;font-size:13px;">
+      <i class="bi bi-box-seam fs-5 text-warning"></i>
+      <div><strong>{{ alert_low_stock }} item{{ alert_low_stock|pluralize }}</strong> are low or out of stock</div>
+      <a href="{% url 'low_stock' %}" class="ms-auto" style="font-size:12px;color:#D97706;font-weight:700;text-decoration:none;">View</a>
+    </div>
+  </div>
+  {% endif %}
+  {% if alert_unpaid_bills %}
+  <div class="col-md-4">
+    <div style="background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;color:#991B1B;font-weight:600;font-size:13px;">
+      <i class="bi bi-receipt fs-5" style="color:#EF4444;"></i>
+      <div><strong>{{ alert_unpaid_bills }} bill{{ alert_unpaid_bills|pluralize }}</strong> are unpaid or partially paid</div>
+      <a href="{% url 'bill_list' %}?status=unpaid" class="ms-auto" style="font-size:12px;color:#DC2626;font-weight:700;text-decoration:none;">View</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- MAIN CONTENT ROW -->
+<div class="row g-3">
+  <!-- Today's Appointments -->
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="bi bi-calendar-check"></i></div>
+        <h5>Today's Appointments</h5>
+        <a href="{% url 'appointment_add' %}" class="btn-rose" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> Add</a>
+      </div>
+      <div style="max-height:340px;overflow-y:auto;">
+        {% if today_appt_list %}
+          {% for appt in today_appt_list %}
+          <div style="padding:12px 20px;border-bottom:1px solid #F0F4F8;display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:10px;background:rgba(42,191,191,.1);color:#2ABFBF;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;">
+              {{ appt.time|time:"H:i" }}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;font-size:13px;color:#1A2B4B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ appt.patient.full_name }}</div>
+              <div style="font-size:11.5px;color:#94A3B8;">{{ appt.get_appointment_type_display }}</div>
+            </div>
+            <span class="status-badge badge-{{ appt.status }}">{{ appt.get_status_display }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="padding:40px;text-align:center;color:#94A3B8;">
+            <i class="bi bi-calendar2-x" style="font-size:32px;opacity:.4;display:block;margin-bottom:8px;"></i>
+            No appointments today
+          </div>
+        {% endif %}
+      </div>
+      <div style="padding:12px 20px;border-top:1px solid #F0F4F8;">
+        <a href="{% url 'appointment_list' %}" style="font-size:12px;color:#64748B;text-decoration:none;">View all appointments <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Deliveries -->
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6;"><i class="bi bi-heart-pulse"></i></div>
+        <h5>Recent Deliveries</h5>
+        <a href="{% url 'delivery_admit' %}" class="btn-teal" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> Admit</a>
+      </div>
+      <div style="max-height:340px;overflow-y:auto;">
+        {% if recent_deliveries %}
+          {% for d in recent_deliveries %}
+          <div style="padding:12px 20px;border-bottom:1px solid #F0F4F8;display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(139,92,246,.1);color:#8B5CF6;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤰</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;font-size:13px;color:#1A2B4B;">{{ d.patient.full_name }}</div>
+              <div style="font-size:11.5px;color:#94A3B8;">{{ d.admission_datetime|date:"M d, Y H:i" }}
+                {% if d.delivery_type %} · {{ d.get_delivery_type_display }}{% endif %}
+              </div>
+            </div>
+            <a href="{% url 'delivery_detail' d.pk %}" style="color:#64748B;font-size:18px;text-decoration:none;"><i class="bi bi-arrow-right-circle"></i></a>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="padding:40px;text-align:center;color:#94A3B8;">
+            <i class="bi bi-heart" style="font-size:32px;opacity:.4;display:block;margin-bottom:8px;"></i>No recent deliveries
+          </div>
+        {% endif %}
+      </div>
+      <div style="padding:12px 20px;border-top:1px solid #F0F4F8;">
+        <a href="{% url 'delivery_list' %}" style="font-size:12px;color:#64748B;text-decoration:none;">View all deliveries <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Patients -->
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="bi bi-person-heart"></i></div>
+        <h5>Recent Patients</h5>
+        <a href="{% url 'patient_add' %}" class="btn-rose" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> Register</a>
+      </div>
+      <div style="max-height:340px;overflow-y:auto;">
+        {% for p in recent_patients %}
+        <div style="padding:12px 20px;border-bottom:1px solid #F0F4F8;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#E8527A,#C23860);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">
+            {{ p.full_name|first|upper }}
+          </div>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:13px;color:#1A2B4B;">{{ p.full_name }}</div>
+            <div style="font-size:11.5px;color:#94A3B8;">{{ p.record_number }} · {{ p.age }} yrs</div>
+          </div>
+          {% if p.risk_level == 'high' %}<span style="font-size:10px;font-weight:700;background:rgba(239,68,68,.12);color:#DC2626;padding:2px 8px;border-radius:10px;">HIGH RISK</span>{% endif %}
+          <a href="{% url 'patient_profile' p.pk %}" style="color:#64748B;font-size:18px;text-decoration:none;"><i class="bi bi-arrow-right-circle"></i></a>
+        </div>
+        {% empty %}
+        <div style="padding:40px;text-align:center;color:#94A3B8;">No patients yet</div>
+        {% endfor %}
+      </div>
+      <div style="padding:12px 20px;border-top:1px solid #F0F4F8;">
+        <a href="{% url 'patient_list' %}" style="font-size:12px;color:#64748B;text-decoration:none;">View all patients <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHART ROW -->
+<div class="row g-3 mt-1">
+  <div class="col-lg-8">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-bar-chart"></i></div>
+        <h5>Monthly Deliveries (Last 6 Months)</h5>
+      </div>
+      <div class="panel-body">
+        <canvas id="deliveryChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-box-seam"></i></div>
+        <h5>Low Stock Items</h5>
+      </div>
+      <div style="max-height:280px;overflow-y:auto;">
+        {% if low_stock_items %}
+          {% for item in low_stock_items %}
+          <div style="padding:10px 20px;border-bottom:1px solid #F0F4F8;display:flex;align-items:center;gap:10px;">
+            <div style="flex:1;">
+              <div style="font-weight:600;font-size:13px;">{{ item.name }}</div>
+              <div style="font-size:11px;color:#94A3B8;">{{ item.item_code }}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:800;font-size:14px;color:#EF4444;">{{ item.quantity_on_hand }}</div>
+              <div style="font-size:10px;color:#94A3B8;">{{ item.unit }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="padding:40px;text-align:center;color:#94A3B8;font-size:13px;">
+            <i class="bi bi-check-circle" style="font-size:28px;color:#10B981;display:block;margin-bottom:8px;"></i>
+            All items well-stocked
+          </div>
+        {% endif %}
+      </div>
+      <div style="padding:12px 20px;border-top:1px solid #F0F4F8;">
+        <a href="{% url 'low_stock' %}" style="font-size:12px;color:#64748B;text-decoration:none;">Full stock report <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('deliveryChart').getContext('2d');
+const monthsData = {{ months_data|safe }};
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: monthsData.map(d => d.month),
+    datasets: [{
+      label: 'Deliveries',
+      data: monthsData.map(d => d.count),
+      backgroundColor: 'rgba(232,82,122,.15)',
+      borderColor: '#E8527A',
+      borderWidth: 2,
+      borderRadius: 8,
+      hoverBackgroundColor: 'rgba(232,82,122,.3)',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#F0F4F8' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

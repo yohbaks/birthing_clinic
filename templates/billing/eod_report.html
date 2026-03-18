@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}End of Day Report{% endblock %}
+{% block topbar_title %}End of Day Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">End-of-Day Cash Close</div>
+    <div class="page-subtitle">{{ report_date|date:"l, F j, Y" }}</div>
+  </div>
+  <form method="get" class="d-flex gap-2 align-items-center">
+    <input type="date" name="date" class="form-control" style="max-width:170px;" value="{{ report_date|date:'Y-m-d' }}" onchange="this.form.submit()">
+    <a href="javascript:window.print()" class="btn-outline-rose"><i class="bi bi-printer"></i> Print</a>
+  </form>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="stat-card card-green"><div class="card-icon"><i class="bi bi-cash-coin"></i></div><div class="stat-value" style="font-size:20px;">₱{{ totals.total|default:0|floatformat:2 }}</div><div class="stat-label">Total Collections</div></div></div>
+  <div class="col-md-3"><div class="stat-card card-teal"><div class="card-icon"><i class="bi bi-receipt"></i></div><div class="stat-value">{{ totals.count|default:0 }}</div><div class="stat-label">Payments Received</div></div></div>
+  <div class="col-md-3"><div class="stat-card card-rose"><div class="card-icon"><i class="bi bi-file-plus"></i></div><div class="stat-value">{{ new_bills|length }}</div><div class="stat-label">New Bills Today</div></div></div>
+  <div class="col-md-3"><div class="stat-card card-amber"><div class="card-icon"><i class="bi bi-exclamation-circle"></i></div><div class="stat-value" style="font-size:20px;">₱{{ outstanding|floatformat:0 }}</div><div class="stat-label">Total Outstanding</div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-cash-stack"></i></div><h5>Collections by Method</h5></div>
+      <div>
+        {% for s in summary %}
+        <div style="padding:14px 18px;border-bottom:1px solid #F0F4F8;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;font-size:13px;">{{ s.payment_method|title }}</div>
+            <div style="font-size:11px;color:#94A3B8;">{{ s.count }} payment{{ s.count|pluralize }}</div>
+          </div>
+          <div style="font-weight:900;font-size:15px;color:#10B981;">₱{{ s.total|floatformat:2 }}</div>
+        </div>
+        {% empty %}<div style="padding:32px;text-align:center;color:#94A3B8;">No collections today</div>{% endfor %}
+      </div>
+      {% if totals.total %}
+      <div style="padding:14px 18px;background:#F8FAFB;border-top:2px solid #E2E8F0;display:flex;justify-content:space-between;">
+        <span style="font-weight:800;font-size:14px;">TOTAL</span>
+        <span style="font-weight:900;font-size:16px;color:#10B981;">₱{{ totals.total|floatformat:2 }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-list-ul"></i></div><h5>Payment Transactions</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:12.5px;">
+          <thead><tr><th>Time</th><th>OR Number</th><th>Patient</th><th>Amount</th><th>Method</th><th>Bill</th></tr></thead>
+          <tbody>
+            {% for pay in payments %}
+            <tr>
+              <td style="font-size:11px;color:#64748B;">{{ pay.payment_date|time:"H:i" }}</td>
+              <td style="font-family:monospace;font-size:11px;font-weight:700;color:#2ABFBF;">{{ pay.receipt_number }}</td>
+              <td style="font-weight:600;">{{ pay.bill.patient.full_name }}</td>
+              <td style="font-weight:800;color:#10B981;">₱{{ pay.amount|floatformat:2 }}</td>
+              <td>{{ pay.get_payment_method_display }}</td>
+              <td style="font-size:11px;"><a href="{% url 'bill_detail' pay.bill.pk %}" style="color:#64748B;">{{ pay.bill.bill_number }}</a></td>
+            </tr>
+            {% empty %}<tr><td colspan="6" class="text-center text-muted py-3">No transactions recorded</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

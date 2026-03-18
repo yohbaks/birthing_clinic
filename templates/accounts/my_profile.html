@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+{% block topbar_title %}My Profile{% endblock %}
+{% block content %}
+<div class="page-title mb-3">My Profile</div>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="panel">
+      <div class="panel-body" style="text-align:center;padding:32px;">
+        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#E8527A,#C23860);color:#fff;font-size:32px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">{{ request.user.first_name|first|upper|default:request.user.username|first|upper }}</div>
+        <div style="font-weight:800;font-size:18px;color:#1A2B4B;">{{ request.user.get_full_name|default:request.user.username }}</div>
+        <div style="font-size:13px;color:#94A3B8;margin-top:4px;">{{ request.user.email|default:"No email set" }}</div>
+        {% if profile %}<span style="display:inline-block;margin-top:10px;background:rgba(42,191,191,.1);color:#0F766E;padding:4px 14px;border-radius:8px;font-size:12px;font-weight:700;">{{ profile.get_role_display }}</span>{% endif %}
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #F0F4F8;">
+          <a href="{% url 'change_password' %}" class="btn-outline-rose" style="font-size:12px;padding:7px 18px;"><i class="bi bi-shield-lock me-1"></i> Change Password</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-person-badge"></i></div><h5>Account Information</h5></div>
+      <div class="panel-body">
+        <table style="width:100%;font-size:13px;">
+          <tr><td style="color:#94A3B8;padding:8px 0;width:35%;">Username</td><td style="font-weight:700;font-family:monospace;">{{ request.user.username }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">Full Name</td><td style="font-weight:700;">{{ request.user.get_full_name|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">Email</td><td style="font-weight:700;">{{ request.user.email|default:"—" }}</td></tr>
+          {% if profile %}
+          <tr><td style="color:#94A3B8;padding:8px 0;">Employee ID</td><td style="font-weight:700;font-family:monospace;color:#2ABFBF;">{{ profile.employee_id }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">Role</td><td><span style="background:rgba(42,191,191,.1);color:#0F766E;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;">{{ profile.get_role_display }}</span></td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">Phone</td><td style="font-weight:700;">{{ profile.phone|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">License No.</td><td style="font-weight:700;">{{ profile.license_number|default:"—" }}</td></tr>
+          {% endif %}
+          <tr><td style="color:#94A3B8;padding:8px 0;">Date Joined</td><td style="font-weight:700;">{{ request.user.date_joined|date:"F j, Y" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">Last Login</td><td style="font-weight:700;">{{ request.user.last_login|date:"M d, Y H:i"|default:"—" }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

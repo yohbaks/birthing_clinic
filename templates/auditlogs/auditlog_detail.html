@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Audit Log #{{ log.pk }}{% endblock %}
+{% block topbar_title %}Audit Log Detail{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'auditlog_list' %}">Audit Logs</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>#{{ log.pk }}</span></div>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Audit Log #{{ log.pk }}</div>
+    <div class="page-subtitle">{{ log.timestamp|date:"F j, Y H:i:s" }}</div>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-info-circle"></i></div><h5>Event Details</h5></div>
+      <div class="panel-body">
+        <table style="width:100%;font-size:13px;">
+          <tr><td style="color:#94A3B8;padding:7px 0;width:40%;">Timestamp</td><td style="font-weight:600;">{{ log.timestamp|date:"M d, Y H:i:s" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:7px 0;">User</td><td style="font-weight:700;">{{ log.user.get_full_name|default:log.user.username|default:"System" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:7px 0;">Action</td><td>
+            {% if log.action == "create" %}<span class="status-badge badge-completed">CREATE</span>
+            {% elif log.action == "update" %}<span class="status-badge badge-partial">UPDATE</span>
+            {% elif log.action == "delete" %}<span class="status-badge badge-unpaid">DELETE</span>
+            {% elif log.action == "login" %}<span class="status-badge badge-confirmed">LOGIN</span>
+            {% else %}<span class="status-badge badge-pending">{{ log.action|upper }}</span>{% endif %}
+          </td></tr>
+          <tr><td style="color:#94A3B8;padding:7px 0;">Module</td><td><span style="background:rgba(42,191,191,.1);color:#0F766E;padding:3px 10px;border-radius:6px;font-weight:600;font-size:12px;">{{ log.module }}</span></td></tr>
+          <tr><td style="color:#94A3B8;padding:7px 0;">Record ID</td><td style="font-weight:600;font-family:monospace;">{{ log.record_id }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:7px 0;">IP Address</td><td style="font-family:monospace;font-size:12px;">{{ log.ip_address|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:7px 0;vertical-align:top;">Description</td><td style="font-size:12px;line-height:1.5;">{{ log.description }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    {% if diff %}
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-diff"></i></div>
+        <h5>Changes ({{ diff|length }} field{{ diff|length|pluralize }} modified)</h5>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:12.5px;">
+          <thead>
+            <tr>
+              <th style="width:30%;">Field</th>
+              <th style="width:35%;background:rgba(239,68,68,.04);">Before</th>
+              <th style="width:35%;background:rgba(16,185,129,.04);">After</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for change in diff %}
+            <tr>
+              <td style="font-weight:700;color:#64748B;">{{ change.field }}</td>
+              <td style="background:rgba(239,68,68,.04);font-family:monospace;font-size:11.5px;color:#B91C1C;word-break:break-all;">
+                {% if change.old == "None" or change.old == "" %}<span style="color:#94A3B8;font-style:italic;">empty</span>{% else %}{{ change.old }}{% endif %}
+              </td>
+              <td style="background:rgba(16,185,129,.04);font-family:monospace;font-size:11.5px;color:#065F46;word-break:break-all;">
+                {% if change.new == "None" or change.new == "" %}<span style="color:#94A3B8;font-style:italic;">empty</span>{% else %}{{ change.new }}{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% elif log.action == "create" and new_values %}
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-plus-circle"></i></div><h5>Created Record</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:12.5px;">
+          <thead><tr><th>Field</th><th>Value</th></tr></thead>
+          <tbody>
+            {% for key, val in new_values.items %}
+            {% if val and val != "None" %}
+            <tr><td style="font-weight:700;color:#64748B;width:35%;">{{ key|title }}</td><td style="font-family:monospace;font-size:11.5px;word-break:break-all;">{{ val }}</td></tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% elif log.action == "delete" and old_values %}
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-trash"></i></div><h5>Deleted Record</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:12.5px;">
+          <thead><tr><th>Field</th><th>Last Value</th></tr></thead>
+          <tbody>
+            {% for key, val in old_values.items %}
+            {% if val and val != "None" %}
+            <tr><td style="font-weight:700;color:#64748B;width:35%;">{{ key|title }}</td><td style="font-family:monospace;font-size:11.5px;color:#EF4444;word-break:break-all;">{{ val }}</td></tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="panel">
+      <div class="panel-body" style="text-align:center;padding:48px;color:#94A3B8;">
+        <i class="bi bi-shield-check" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px;"></i>
+        <div style="font-weight:700;">{{ log.action|title }} event — no field-level data</div>
+        <div style="font-size:13px;margin-top:6px;">{{ log.description }}</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

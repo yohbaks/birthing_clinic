@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}FHSIS Report — {{ month_name }}{% endblock %}
+{% block topbar_title %}DOH FHSIS Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">DOH FHSIS Monthly Report</div>
+    <div class="page-subtitle">{{ month_name }} · Maternal & Child Health Indicators</div>
+  </div>
+  <div class="d-flex gap-2">
+    <form method="get" class="d-flex gap-2">
+      <select name="month" class="form-select" style="max-width:140px;" onchange="this.form.submit()">
+        {% for m in month_range %}
+        <option value="{{ m }}" {% if m == month %}selected{% endif %}>{{ month_names|slice:m|last }}</option>
+        {% endfor %}
+      </select>
+      <select name="year" class="form-select" style="max-width:100px;" onchange="this.form.submit()">
+        {% for y in year_range %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}
+      </select>
+    </form>
+    <a href="javascript:window.print()" class="btn-outline-rose"><i class="bi bi-printer"></i> Print</a>
+  </div>
+</div>
+
+<div style="background:rgba(42,191,191,.06);border:1.5px solid rgba(42,191,191,.2);border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:12px;color:#0F766E;">
+  <i class="bi bi-info-circle me-2"></i>
+  <strong>FHSIS M1 — Maternal Care Report</strong> — Use this report for monthly LGU/DOH submissions. Data covers <strong>{{ first_day|date:"F j" }} – {{ last_day|date:"F j, Y" }}</strong>.
+</div>
+
+<div class="row g-3">
+  <!-- PRENATAL CARE -->
+  <div class="col-12">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(232,82,122,.1);color:#E8527A;"><i class="bi bi-activity"></i></div>
+        <h5>A. Prenatal Care</h5>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead style="background:#F8FAFB;">
+            <tr><th style="width:60%;">Indicator</th><th class="text-center">Count</th><th class="text-center" style="color:#94A3B8;font-size:11px;">FHSIS Code</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1. New ANC registrants (1st visit this month)</td><td class="text-center fw-bold">{{ pn_new_registrants }}</td><td class="text-center text-muted" style="font-size:11px;">M1-A1</td></tr>
+            <tr style="background:#FAFBFC;"><td>2. Registered in 1st trimester (≤12 weeks GA)</td><td class="text-center fw-bold">{{ pn_first_trimester }}</td><td class="text-center text-muted" style="font-size:11px;">M1-A2</td></tr>
+            <tr><td>3. Total prenatal visits this month</td><td class="text-center fw-bold">{{ pn_total_visits }}</td><td class="text-center text-muted" style="font-size:11px;">M1-A3</td></tr>
+            <tr style="background:#FAFBFC;"><td>4. With ≥4 prenatal visits (cumulative this year)</td><td class="text-center fw-bold">{{ pn_4plus_visits }}</td><td class="text-center text-muted" style="font-size:11px;">M1-A4</td></tr>
+            <tr><td>5. High-risk pregnancies identified</td><td class="text-center fw-bold {% if pn_high_risk > 0 %}text-danger{% endif %}">{{ pn_high_risk }}</td><td class="text-center text-muted" style="font-size:11px;">M1-A5</td></tr>
+            <tr style="background:#FAFBFC;"><td>6. Given iron supplementation</td><td class="text-center fw-bold">{{ pn_with_iron }}</td><td class="text-center text-muted" style="font-size:11px;">M1-A6</td></tr>
+            <tr><td>7. Given folic acid supplementation</td><td class="text-center fw-bold">{{ pn_with_folic }}</td><td class="text-center text-muted" style="font-size:11px;">M1-A7</td></tr>
+            <tr style="background:#FAFBFC;"><td>8. Given tetanus toxoid (any dose, this month)</td><td class="text-center fw-bold">{{ pn_with_tt }}</td><td class="text-center text-muted" style="font-size:11px;">M1-A8</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELIVERY -->
+  <div class="col-lg-6">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6;"><i class="bi bi-heart-pulse"></i></div><h5>B. Delivery Outcomes</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead style="background:#F8FAFB;"><tr><th>Indicator</th><th class="text-center">Count</th><th class="text-center" style="font-size:11px;color:#94A3B8;">Code</th></tr></thead>
+          <tbody>
+            <tr><td>Total deliveries</td><td class="text-center fw-bold">{{ del_total }}</td><td class="text-center text-muted" style="font-size:11px;">M1-B1</td></tr>
+            <tr style="background:#FAFBFC;"><td>Live births</td><td class="text-center fw-bold text-success">{{ del_livebirths }}</td><td class="text-center text-muted" style="font-size:11px;">M1-B2</td></tr>
+            <tr><td>Stillbirths</td><td class="text-center fw-bold {% if del_stillbirths > 0 %}text-danger{% endif %}">{{ del_stillbirths }}</td><td class="text-center text-muted" style="font-size:11px;">M1-B3</td></tr>
+            <tr style="background:#FAFBFC;"><td>Normal spontaneous delivery (NSD)</td><td class="text-center fw-bold">{{ del_nsd }}</td><td class="text-center text-muted" style="font-size:11px;">M1-B4</td></tr>
+            <tr><td>Cesarean section (CS)</td><td class="text-center fw-bold">{{ del_cs }}</td><td class="text-center text-muted" style="font-size:11px;">M1-B5</td></tr>
+            <tr style="background:#FAFBFC;"><td>With complications</td><td class="text-center fw-bold {% if del_compl > 0 %}text-warning{% endif %}">{{ del_compl }}</td><td class="text-center text-muted" style="font-size:11px;">M1-B6</td></tr>
+            <tr><td>Referred out</td><td class="text-center fw-bold">{{ del_referral }}</td><td class="text-center text-muted" style="font-size:11px;">M1-B7</td></tr>
+            <tr style="background:#FEF2F2;"><td><strong style="color:#DC2626;">Maternal deaths</strong></td><td class="text-center fw-bold text-danger">{{ del_maternal_deaths }}</td><td class="text-center text-muted" style="font-size:11px;">M1-B8</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEWBORN -->
+  <div class="col-lg-6">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-emoji-smile"></i></div><h5>C. Newborn Care</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead style="background:#F8FAFB;"><tr><th>Indicator</th><th class="text-center">Count</th><th class="text-center" style="font-size:11px;color:#94A3B8;">Code</th></tr></thead>
+          <tbody>
+            <tr><td>Total live newborns</td><td class="text-center fw-bold">{{ nb_total }}</td><td class="text-center text-muted" style="font-size:11px;">M1-C1</td></tr>
+            <tr style="background:#FAFBFC;"><td>Low birth weight (&lt;2,500g)</td><td class="text-center fw-bold {% if nb_low_bw > 0 %}text-warning{% endif %}">{{ nb_low_bw }}</td><td class="text-center text-muted" style="font-size:11px;">M1-C2</td></tr>
+            <tr><td>Normal birth weight (2,500–3,999g)</td><td class="text-center fw-bold text-success">{{ nb_normal_bw }}</td><td class="text-center text-muted" style="font-size:11px;">M1-C3</td></tr>
+            <tr style="background:#FAFBFC;"><td>Given Vitamin K</td><td class="text-center fw-bold">{{ nb_vit_k }}</td><td class="text-center text-muted" style="font-size:11px;">M1-C4</td></tr>
+            <tr><td>Given eye prophylaxis</td><td class="text-center fw-bold">{{ nb_eye_proph }}</td><td class="text-center text-muted" style="font-size:11px;">M1-C5</td></tr>
+            <tr style="background:#FAFBFC;"><td>Newborn screening done</td><td class="text-center fw-bold">{{ nb_nbs }}</td><td class="text-center text-muted" style="font-size:11px;">M1-C6</td></tr>
+            <tr style="background:#FEF2F2;"><td><strong style="color:#DC2626;">Neonatal deaths</strong></td><td class="text-center fw-bold text-danger">{{ nb_deaths }}</td><td class="text-center text-muted" style="font-size:11px;">M1-C7</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- POSTPARTUM -->
+  <div class="col-12">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(232,82,122,.1);color:#E8527A;"><i class="bi bi-heart"></i></div><h5>D. Postpartum Care</h5></div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead style="background:#F8FAFB;"><tr><th style="width:60%;">Indicator</th><th class="text-center">Count</th><th class="text-center" style="font-size:11px;color:#94A3B8;">Code</th></tr></thead>
+          <tbody>
+            <tr><td>Total postpartum visits</td><td class="text-center fw-bold">{{ pp_total }}</td><td class="text-center text-muted" style="font-size:11px;">M1-D1</td></tr>
+            <tr style="background:#FAFBFC;"><td>6-week postpartum visits</td><td class="text-center fw-bold">{{ pp_6week }}</td><td class="text-center text-muted" style="font-size:11px;">M1-D2</td></tr>
+            <tr><td>Exclusively breastfeeding at postpartum visit</td><td class="text-center fw-bold text-success">{{ pp_bf_excl }}</td><td class="text-center text-muted" style="font-size:11px;">M1-D3</td></tr>
+            <tr style="background:#FAFBFC;"><td>Received family planning counseling</td><td class="text-center fw-bold">{{ pp_fp_counseled }}</td><td class="text-center text-muted" style="font-size:11px;">M1-D4</td></tr>
+            <tr><td>Currently using a modern FP method</td><td class="text-center fw-bold">{{ pp_fp_methods }}</td><td class="text-center text-muted" style="font-size:11px;">M1-D5</td></tr>
+            <tr style="background:#FAFBFC;"><td>Screened positive for postnatal depression (EPDS ≥10)</td><td class="text-center fw-bold {% if pp_depression > 0 %}text-warning{% endif %}">{{ pp_depression }}</td><td class="text-center text-muted" style="font-size:11px;">M1-D6</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fix month selector display
+const monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+document.querySelectorAll('select[name="month"] option').forEach(opt => {
+  if (opt.value) opt.textContent = monthNames[parseInt(opt.value)];
+});
+</script>
+{% endblock %}

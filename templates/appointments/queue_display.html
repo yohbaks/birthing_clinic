@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Queue Display{% endblock %}
+{% block topbar_title %}Queue Display{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Patient Queue — {{ today|date:"F j, Y" }}</div>
+    <div class="page-subtitle">Live waiting list · Auto-refreshes every 15 seconds</div>
+  </div>
+  <a href="{% url 'queue_manage' %}" class="btn-rose"><i class="bi bi-gear"></i> Manage Queue</a>
+</div>
+
+{% if now_serving %}
+<div style="background:linear-gradient(135deg,#1A2B4B,#2A3F6F);border-radius:20px;padding:32px;text-align:center;margin-bottom:24px;overflow:hidden;position:relative;">
+  <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(42,191,191,.08);"></div>
+  <div style="font-size:12px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px;">Now Serving</div>
+  <div style="font-size:90px;font-weight:900;color:#2ABFBF;line-height:1;">{{ now_serving.queue_number }}</div>
+  <div style="font-size:22px;font-weight:700;color:#fff;margin-top:8px;">{{ now_serving.patient.full_name }}</div>
+  {% if now_serving.appointment %}<div style="font-size:13px;color:rgba(255,255,255,.45);margin-top:4px;">{{ now_serving.appointment.get_appointment_type_display }}</div>{% endif %}
+</div>
+{% else %}
+<div style="background:#F8FAFB;border-radius:20px;padding:32px;text-align:center;margin-bottom:24px;border:2px dashed #E2E8F0;">
+  <div style="font-size:48px;margin-bottom:8px;">&#128203;</div>
+  <div style="font-weight:700;color:#94A3B8;font-size:16px;">No patient currently being served</div>
+</div>
+{% endif %}
+
+{% if next_up %}
+<div style="background:rgba(232,82,122,.06);border:1.5px solid rgba(232,82,122,.2);border-radius:14px;padding:16px 24px;display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+  <div style="font-size:11px;color:#E8527A;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Next</div>
+  <div style="width:40px;height:40px;border-radius:10px;background:#E8527A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;">{{ next_up.queue_number }}</div>
+  <div style="font-weight:700;font-size:16px;color:#1A2B4B;">{{ next_up.patient.full_name }}</div>
+</div>
+{% endif %}
+
+<div class="panel">
+  <div class="panel-header"><div class="panel-icon"><i class="bi bi-list-ol"></i></div><h5>Full Queue ({{ queue|length }})</h5></div>
+  <div class="row g-0">
+    {% for entry in queue %}
+    <div class="col-6 col-md-4 col-lg-3" style="border-bottom:1px solid #F0F4F8;border-right:1px solid #F0F4F8;">
+      <div style="padding:20px;text-align:center;{% if entry.status == 'in_progress' %}background:rgba(42,191,191,.08);{% elif entry.status == 'done' %}opacity:.45;{% elif entry.status == 'skipped' %}opacity:.3;{% endif %}">
+        <div style="font-size:42px;font-weight:900;{% if entry.status == 'in_progress' %}color:#2ABFBF;{% elif entry.status == 'done' %}color:#10B981;{% elif entry.status == 'skipped' %}color:#94A3B8;{% else %}color:#1A2B4B;{% endif %}line-height:1;margin-bottom:6px;">{{ entry.queue_number }}</div>
+        <div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ entry.patient.full_name|truncatechars:18 }}</div>
+        <div style="margin-top:6px;">
+          {% if entry.status == 'waiting' %}<span style="font-size:10px;background:rgba(100,116,139,.1);color:#475569;padding:2px 8px;border-radius:8px;font-weight:700;">WAITING</span>
+          {% elif entry.status == 'in_progress' %}<span style="font-size:10px;background:rgba(42,191,191,.15);color:#0F766E;padding:2px 8px;border-radius:8px;font-weight:700;">SERVING</span>
+          {% elif entry.status == 'done' %}<span style="font-size:10px;background:rgba(16,185,129,.12);color:#059669;padding:2px 8px;border-radius:8px;font-weight:700;">DONE</span>
+          {% else %}<span style="font-size:10px;background:rgba(239,68,68,.1);color:#DC2626;padding:2px 8px;border-radius:8px;font-weight:700;">SKIPPED</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12"><div style="padding:60px;text-align:center;color:#94A3B8;"><i class="bi bi-list-ol" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px;"></i>No patients in queue today</div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let countdown = 15;
+setInterval(() => {
+  countdown--;
+  const el = document.querySelector('.page-subtitle');
+  if (el) el.textContent = `Live waiting list · Refreshing in ${countdown}s`;
+  if (countdown <= 0) location.reload();
+}, 1000);
+</script>
+{% endblock %}

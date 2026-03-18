@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Record Prenatal Visit{% endblock %}
+{% block topbar_title %}New Prenatal Visit{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">Record Prenatal Visit</div></div>
+</div>
+<form method="post">
+{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-activity"></i></div><h5>Visit Information</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Patient *</label>
+            <select name="patient" class="form-select" required>
+              <option value="">Select Patient</option>
+              {% for p in patients %}<option value="{{ p.pk }}" {% if request.GET.patient == p.pk|stringformat:"i" %}selected{% endif %}>{{ p.full_name }} ({{ p.record_number }})</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3"><label class="form-label">Visit Date *</label><input type="date" name="visit_date" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">Gestational Age (weeks) *</label><input type="number" name="gestational_age_weeks" class="form-control" min="1" max="45" required><small id="ga-hint" style="color:#2ABFBF;font-size:11px;font-weight:600;"></small></div>
+          <div class="col-md-3"><label class="form-label">Weight (kg) *</label><input type="number" name="weight" step="0.01" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">BP Systolic *</label><input type="number" name="bp_systolic" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">BP Diastolic *</label><input type="number" name="bp_diastolic" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">Temperature (°C)</label><input type="number" name="temperature" step="0.1" class="form-control" value="36.5"></div>
+          <div class="col-md-3"><label class="form-label">Fetal Heart Rate</label><input type="number" name="fetal_heart_rate" class="form-control" placeholder="bpm"></div>
+          <div class="col-md-3"><label class="form-label">Fundal Height (cm)</label><input type="number" name="fundal_height" step="0.5" class="form-control"></div>
+          <div class="col-md-3"><label class="form-label">Risk Flag</label>
+            <select name="risk_flag" class="form-select">
+              <option value="normal">Normal</option>
+              <option value="borderline">Borderline</option>
+              <option value="high_risk">High Risk</option>
+            </select>
+          </div>
+          <div class="col-md-3"><label class="form-label">Follow-up Date</label><input type="date" name="follow_up_date" class="form-control"></div>
+          <div class="col-12"><label class="form-label">Chief Complaint</label><textarea name="chief_complaint" class="form-control" rows="2"></textarea></div>
+          <div class="col-md-6"><label class="form-label">Assessment *</label><textarea name="assessment" class="form-control" rows="3" required></textarea></div>
+          <div class="col-md-6"><label class="form-label">Plan *</label><textarea name="plan" class="form-control" rows="3" required></textarea></div>
+          <div class="col-md-6"><label class="form-label">Prescribed Medicines</label><textarea name="prescribed_medicines" class="form-control" rows="2"></textarea></div>
+          <div class="col-md-6"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-body">
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-check-circle"></i> Save Prenatal Visit</button>
+        <a href="{% url 'prenatal_list' %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const patientSel = document.querySelector('select[name="patient"]');
+  const visitDate  = document.querySelector('input[name="visit_date"]');
+  const gaInput    = document.querySelector('input[name="gestational_age_weeks"]');
+  const gaHint     = document.getElementById('ga-hint');
+
+  // Patient LMP data embedded from context
+  const patientLMP = {{ patient_lmps|safe }};
+
+  function updateGA() {
+    const pid = patientSel ? patientSel.value : '';
+    const vdate = visitDate ? visitDate.value : '';
+    if (!pid || !vdate || !patientLMP[pid]) return;
+    const lmp = new Date(patientLMP[pid]);
+    const visit = new Date(vdate);
+    const diffDays = Math.floor((visit - lmp) / (1000*60*60*24));
+    const weeks = Math.floor(diffDays / 7);
+    if (weeks >= 0 && weeks <= 45) {
+      if (gaInput && !gaInput.value) gaInput.value = weeks;
+      if (gaHint) gaHint.textContent = 'Auto-calculated: ' + weeks + ' weeks from LMP';
+    }
+  }
+  
+// ── Drug interaction checker ──────────────────────────────
+const medInput = document.querySelector('textarea[name="prescribed_medicines"]') ||
+                  document.querySelector('input[name="prescribed_medicines"]');
+const drugWarn = document.createElement('div');
+drugWarn.style.cssText = 'display:none;margin-top:6px;padding:10px;background:rgba(239,68,68,.06);border:1.5px solid rgba(239,68,68,.2);border-radius:8px;font-size:12px;color:#B91C1C;';
+if (medInput) {
+  medInput.parentNode.appendChild(drugWarn);
+  let dTimer;
+  medInput.addEventListener('input', function() {
+    clearTimeout(dTimer);
+    dTimer = setTimeout(() => {
+      const val = this.value.trim();
+      if (!val) { drugWarn.style.display='none'; return; }
+      const drugs = val.split(/[,\n]+/).map(d=>d.trim()).filter(Boolean);
+      if (drugs.length < 2) { drugWarn.style.display='none'; return; }
+      fetch('/drug-check/?drugs=' + encodeURIComponent(drugs.join(',')))
+        .then(r=>r.json())
+        .then(data => {
+          if (data.interactions && data.interactions.length > 0) {
+            drugWarn.innerHTML = '<strong>⚠️ Potential Drug Interactions:</strong><br>' +
+              data.interactions.map(i =>
+                `<span style="color:#DC2626;font-weight:600;">[${i.severity}]</span> ${i.drug1} + ${i.drug2}: ${i.message}`
+              ).join('<br>');
+            drugWarn.style.display = 'block';
+          } else {
+            drugWarn.style.display = 'none';
+          }
+        }).catch(()=>{});
+    }, 800);
+  });
+}
+
+  if (patientSel) patientSel.addEventListener('change', updateGA);
+  if (visitDate)  visitDate.addEventListener('change', updateGA);
+});
+</script>
+{% endblock %}

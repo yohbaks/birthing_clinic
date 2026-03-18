@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% block title %}Delivery Record{% endblock %}
+{% block topbar_title %}Delivery Record{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'delivery_list' %}">Deliveries</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>{{ delivery.patient.full_name }}</span></div>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">{{ delivery.patient.full_name }}</div>
+    <div class="page-subtitle">Admitted {{ delivery.admission_datetime|date:"F j, Y g:i A" }}{% if delivery.attending_midwife %} · Midwife: {{ delivery.attending_midwife.get_full_name }}{% endif %}{% if delivery.attending_doctor %} · Dr. {{ delivery.attending_doctor.get_full_name }}{% endif %}</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'labor_monitor' delivery.pk %}" class="btn-teal"><i class="bi bi-graph-up"></i> Labor Monitoring</a>
+    <a href="{% url 'postpartum_add' %}?patient={{ delivery.patient.pk }}&delivery={{ delivery.pk }}" class="btn-outline-rose"><i class="bi bi-heart"></i> Postpartum</a>
+    <a href="{% url 'pdf_delivery' delivery.pk %}" class="btn-teal" target="_blank"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <a href="{% url 'bill_from_delivery' delivery.pk %}" class="btn-outline-rose"><i class="bi bi-receipt"></i> Generate Bill</a>
+    <a href="{% url 'newborn_add' %}?delivery={{ delivery.pk }}&patient={{ delivery.patient.pk }}" class="btn-rose"><i class="bi bi-emoji-smile"></i> Add Newborn</a>
+  </div>
+</div>
+
+{% if delivery.patient.risk_level == "high" %}
+<div class="high-risk-banner"><i class="bi bi-exclamation-triangle-fill fs-5"></i><div><strong>HIGH RISK PATIENT</strong> — Extra monitoring required. {{ delivery.patient.full_name }}</div></div>
+{% endif %}
+
+<div class="row g-3">
+  <!-- LEFT: Outcome form + discharge -->
+  <div class="col-lg-5">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-clipboard2-pulse"></i></div><h5>Delivery Outcome</h5></div>
+      <div class="panel-body">
+        <form method="post">{% csrf_token %}
+          <div class="row g-3">
+            <div class="col-12"><label class="form-label">Delivery Type</label>
+              <select name="delivery_type" class="form-select">
+                <option value="">— In Progress —</option>
+                <option value="nsd" {% if delivery.delivery_type == "nsd" %}selected{% endif %}>Normal Spontaneous Delivery</option>
+                <option value="assisted" {% if delivery.delivery_type == "assisted" %}selected{% endif %}>Assisted Delivery</option>
+                <option value="cs" {% if delivery.delivery_type == "cs" %}selected{% endif %}>Cesarean Section</option>
+                <option value="referral" {% if delivery.delivery_type == "referral" %}selected{% endif %}>Referral</option>
+              </select>
+            </div>
+            <div class="col-md-6"><label class="form-label">Presentation</label>
+              <select name="presentation" class="form-select">
+                <option value="">—</option>
+                <option value="cephalic" {% if delivery.presentation == "cephalic" %}selected{% endif %}>Cephalic</option>
+                <option value="breech" {% if delivery.presentation == "breech" %}selected{% endif %}>Breech</option>
+                <option value="transverse" {% if delivery.presentation == "transverse" %}selected{% endif %}>Transverse</option>
+              </select>
+            </div>
+            <div class="col-md-6"><label class="form-label">Delivery Date & Time</label><input type="datetime-local" name="delivery_datetime" class="form-control" value="{{ delivery.delivery_datetime|date:'Y-m-d\TH:i'|default:'' }}"></div>
+            <div class="col-md-6"><label class="form-label">Labor Start Time</label><input type="datetime-local" name="labor_start_time" class="form-control" value="{{ delivery.labor_start_time|date:'Y-m-d\TH:i'|default:'' }}"></div>
+            <div class="col-md-6"><label class="form-label">Full Dilation Time</label><input type="datetime-local" name="full_dilation_time" class="form-control" value="{{ delivery.full_dilation_time|date:'Y-m-d\TH:i'|default:'' }}"></div>
+            <div class="col-md-6"><label class="form-label">Placenta Delivery Time</label><input type="datetime-local" name="placenta_delivery_time" class="form-control" value="{{ delivery.placenta_delivery_time|date:'Y-m-d\TH:i'|default:'' }}"></div>
+            <div class="col-md-6"><label class="form-label">Est. Blood Loss (mL)</label><input type="number" name="ebl" class="form-control" step="1" value="{{ delivery.estimated_blood_loss|default:'' }}" placeholder="mL"></div>
+            <div class="col-12"><label class="form-label">Maternal Condition</label><textarea name="maternal_condition" class="form-control" rows="2">{{ delivery.maternal_condition }}</textarea></div>
+            <div class="col-12"><label class="form-label">Complications Summary</label><textarea name="complications" class="form-control" rows="2">{{ delivery.complications }}</textarea></div>
+            {% if delivery.delivery_type == "referral" %}
+            <div class="col-md-6"><label class="form-label">Referral Hospital</label><input type="text" name="referral_hospital" class="form-control" value="{{ delivery.referral_hospital }}"></div>
+            <div class="col-md-6"><label class="form-label">Referral Reason</label><input type="text" name="referral_reason" class="form-control" value="{{ delivery.referral_reason }}"></div>
+            {% endif %}
+            <div class="col-md-6">
+              <label class="form-label">Attending Midwife</label>
+              <select name="attending_midwife_select" class="form-select">
+                <option value="">— Unchanged —</option>
+                {% for m in midwives %}<option value="{{ m.user.pk }}" {% if delivery.attending_midwife_id == m.user.pk %}selected{% endif %}>{{ m.user.get_full_name }} ({{ m.get_role_display }})</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Attending Physician</label>
+              <select name="attending_doctor" class="form-select">
+                <option value="">— None —</option>
+                {% for d in doctors %}<option value="{{ d.user.pk }}" {% if delivery.attending_doctor_id == d.user.pk %}selected{% endif %}>Dr. {{ d.user.get_full_name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-12"><label class="form-label">Discharge Date & Time</label><input type="datetime-local" name="discharge_datetime" class="form-control" value="{{ delivery.discharge_datetime|date:'Y-m-d\TH:i'|default:'' }}"></div>
+            <div class="col-12"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2">{{ delivery.notes }}</textarea></div>
+            <div class="col-12"><button type="submit" class="btn-rose w-100" style="justify-content:center;"><i class="bi bi-check-circle"></i> Update Record</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Complications list -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-exclamation-triangle"></i></div><h5>Complications ({{ complications|length }})</h5>
+        <button onclick="document.getElementById('compModal').style.display='flex'" class="btn-outline-rose" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> Add</button>
+      </div>
+      <div>
+        {% for comp in complications %}
+        <div style="padding:12px 20px;border-bottom:1px solid #F0F4F8;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span style="font-size:10px;font-weight:700;background:rgba(239,68,68,.1);color:#DC2626;padding:2px 8px;border-radius:8px;text-transform:uppercase;">{{ comp.complication_type }}</span>
+            <span style="font-size:11px;color:#94A3B8;">{{ comp.recorded_at|date:"M d H:i" }}</span>
+          </div>
+          <div style="font-size:13px;font-weight:600;">{{ comp.description }}</div>
+          {% if comp.action_taken %}<div style="font-size:12px;color:#10B981;margin-top:3px;"><i class="bi bi-check-circle-fill me-1"></i>{{ comp.action_taken }}</div>{% endif %}
+        </div>
+        {% empty %}<div style="padding:24px;text-align:center;color:#94A3B8;font-size:13px;">No complications recorded</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Monitoring + Newborns -->
+  <div class="col-lg-7">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-activity"></i></div><h5>Labor Monitoring ({{ monitoring|length }})</h5>
+        <a href="{% url 'labor_monitor' delivery.pk %}" class="btn-teal" style="font-size:11px;padding:5px 12px;">Full Monitor</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:12px;">
+          <thead><tr><th>Time</th><th>Contractions</th><th>FHR</th><th>Dilation</th><th>BP</th><th>Membranes</th></tr></thead>
+          <tbody>
+            {% for m in monitoring|slice:":8" %}
+            <tr>
+              <td style="font-weight:700;white-space:nowrap;">{{ m.recorded_at|date:"M d H:i" }}</td>
+              <td>{{ m.contraction_frequency|default:"—" }}</td>
+              <td style="font-weight:700;{% if m.fetal_heart_rate and m.fetal_heart_rate < 110 or m.fetal_heart_rate and m.fetal_heart_rate > 160 %}color:#EF4444;{% endif %}">{{ m.fetal_heart_rate|default:"—" }}</td>
+              <td style="font-weight:700;">{% if m.cervical_dilation %}{{ m.cervical_dilation }} cm{% else %}—{% endif %}</td>
+              <td>{% if m.maternal_bp_systolic %}{{ m.maternal_bp_systolic }}/{{ m.maternal_bp_diastolic }}{% else %}—{% endif %}</td>
+              <td>{{ m.get_membrane_status_display }}</td>
+            </tr>
+            {% empty %}<tr><td colspan="6" class="text-muted text-center py-3">No monitoring entries yet</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if delivery.newborns.all %}
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-emoji-smile"></i></div><h5>Newborns ({{ delivery.newborns.count }})</h5></div>
+      {% for nb in delivery.newborns.all %}
+      <div style="padding:16px 20px;border-bottom:1px solid #F0F4F8;display:flex;align-items:center;gap:12px;">
+       <div>
+        {% load static %}
+            {% if nb.gender == "male" %}
+                <img src="{% static 'img/boy.png' %}" width="40" height="40" style="border-radius:50%;">
+            {% else %}
+                <img src="{% static 'img/girl.png' %}" width="40" height="40" style="border-radius:50%;">
+            {% endif %}
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14px;">{{ nb.baby_name|default:"Unnamed Baby" }} <span style="font-family:monospace;font-size:12px;color:#2ABFBF;">({{ nb.baby_id }})</span></div>
+          <div style="font-size:12px;color:#64748B;">{{ nb.get_gender_display }} · {{ nb.weight_grams }}g · {{ nb.length_cm }}cm · APGAR {{ nb.apgar_1min|default:"?" }}/{{ nb.apgar_5min|default:"?" }}</div>
+          <div style="font-size:11px;color:#94A3B8;margin-top:2px;">Born {{ nb.birth_datetime|date:"M d, Y H:i" }}</div>
+        </div>
+        <a href="{% url 'newborn_detail' nb.pk %}" class="btn-teal" style="font-size:11px;padding:5px 12px;">View</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="panel">
+      <div class="panel-body" style="text-align:center;padding:32px;">
+        <div style="font-size:40px;margin-bottom:8px;">👶</div>
+        <div style="font-weight:700;color:#1A2B4B;margin-bottom:4px;">No newborn records yet</div>
+        <div style="font-size:13px;color:#94A3B8;margin-bottom:16px;">Add a newborn record after delivery</div>
+        <a href="{% url 'postpartum_add' %}?patient={{ delivery.patient.pk }}&delivery={{ delivery.pk }}" class="btn-outline-rose"><i class="bi bi-heart"></i> Postpartum</a>
+    <a href="{% url 'pdf_delivery' delivery.pk %}" class="btn-teal" target="_blank"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <a href="{% url 'bill_from_delivery' delivery.pk %}" class="btn-outline-rose"><i class="bi bi-receipt"></i> Generate Bill</a>
+    <a href="{% url 'newborn_add' %}?delivery={{ delivery.pk }}&patient={{ delivery.patient.pk }}" class="btn-rose"><i class="bi bi-plus"></i> Add Newborn Record</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Complication Modal -->
+<div id="compModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <h5 style="font-weight:800;color:#1A2B4B;margin-bottom:20px;"><i class="bi bi-exclamation-triangle me-2" style="color:#EF4444;"></i>Record Complication</h5>
+    <form method="post" action="{% url 'add_complication' delivery.pk %}">
+      {% csrf_token %}
+      <div class="mb-3"><label class="form-label">Complication Type *</label>
+        <select name="complication_type" class="form-select">
+          <option value="pph">Postpartum Hemorrhage (PPH)</option>
+          <option value="hptn">Hypertension / Preeclampsia</option>
+          <option value="fetal_distress">Fetal Distress</option>
+          <option value="shoulder_dystocia">Shoulder Dystocia</option>
+          <option value="cord_prolapse">Cord Prolapse</option>
+          <option value="placenta_previa">Placenta Previa</option>
+          <option value="rupture">Uterine Rupture</option>
+          <option value="laceration">Laceration</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="mb-3"><label class="form-label">Description *</label><textarea name="description" class="form-control" rows="3" required placeholder="Describe the complication..."></textarea></div>
+      <div class="mb-3"><label class="form-label">Action Taken</label><textarea name="action_taken" class="form-control" rows="2" placeholder="Interventions, referrals, etc."></textarea></div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-rose" style="flex:1;justify-content:center;"><i class="bi bi-check-circle"></i> Record</button>
+        <button type="button" onclick="document.getElementById('compModal').style.display='none'" class="btn-outline-rose" style="flex:1;justify-content:center;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

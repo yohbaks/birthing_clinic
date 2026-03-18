@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}{{ supplier.name }}{% endblock %}
+{% block topbar_title %}Supplier Detail{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'supplier_list' %}">Suppliers</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>{{ supplier.name }}</span></div>
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">{{ supplier.name }}</div><div class="page-subtitle">Supplier Profile</div></div>
+  <a href="{% url 'supplier_edit' supplier.pk %}" class="btn-outline-rose"><i class="bi bi-pencil"></i> Edit</a>
+</div>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-building"></i></div><h5>Contact Information</h5></div>
+      <div class="panel-body">
+        <table style="width:100%;font-size:13px;">
+          <tr><td style="color:#94A3B8;padding:6px 0;width:45%;">Company</td><td style="font-weight:700;">{{ supplier.name }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">Contact Person</td><td style="font-weight:700;">{{ supplier.contact_person|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">Phone</td><td style="font-weight:700;">{{ supplier.phone|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">Email</td><td style="font-weight:700;">{{ supplier.email|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;vertical-align:top;">Address</td><td style="font-weight:600;font-size:12px;">{{ supplier.address|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">Status</td><td>{% if supplier.is_active %}<span class="status-badge badge-completed">Active</span>{% else %}<span class="status-badge badge-cancelled">Inactive</span>{% endif %}</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-box-seam"></i></div><h5>Items Supplied</h5></div>
+      <div>
+        {% for item in items_supplied %}
+        <div style="padding:10px 18px;border-bottom:1px solid #F0F4F8;display:flex;align-items:center;justify-content:space-between;">
+          <div><div style="font-weight:600;font-size:13px;">{{ item.name }}</div><div style="font-size:11px;color:#94A3B8;font-family:monospace;">{{ item.item_code }}</div></div>
+          <a href="{% url 'item_detail' item.pk %}" style="color:#64748B;text-decoration:none;font-size:16px;"><i class="bi bi-arrow-right-circle"></i></a>
+        </div>
+        {% empty %}<div style="padding:20px;text-align:center;color:#94A3B8;font-size:13px;">No items from this supplier yet</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-cart3"></i></div><h5>Recent Purchase Orders</h5>
+        <a href="{% url 'po_add' %}" class="btn-rose" style="font-size:11px;padding:5px 12px;"><i class="bi bi-plus"></i> New PO</a>
+      </div>
+      {% if orders %}
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:13px;">
+          <thead><tr><th>PO Number</th><th>Order Date</th><th>Expected</th><th>Total</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {% for po in orders %}
+            <tr>
+              <td style="font-family:monospace;font-weight:700;color:#2ABFBF;font-size:12px;">{{ po.po_number }}</td>
+              <td>{{ po.order_date|date:"M d, Y" }}</td>
+              <td>{{ po.expected_delivery|date:"M d, Y"|default:"—" }}</td>
+              <td style="font-weight:700;">₱{{ po.total_amount|floatformat:2 }}</td>
+              <td>{% if po.status == "received" %}<span class="status-badge badge-completed">Received</span>{% elif po.status == "ordered" %}<span class="status-badge badge-confirmed">Ordered</span>{% else %}<span class="status-badge badge-pending">Draft</span>{% endif %}</td>
+              <td><a href="{% url 'po_detail' po.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="padding:40px;text-align:center;color:#94A3B8;"><i class="bi bi-cart3" style="font-size:32px;opacity:.3;display:block;margin-bottom:8px;"></i><div style="font-size:13px;">No purchase orders yet</div></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

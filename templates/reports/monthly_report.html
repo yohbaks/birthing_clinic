@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block title %}Monthly Report — {{ month_name }}{% endblock %}
+{% block topbar_title %}Monthly Statistical Report{% endblock %}
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Monthly Statistical Report</div>
+    <div class="page-subtitle">{{ month_name }} · BirthCare Clinic</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'monthly_report' %}?year={{ prev_month.year }}&month={{ prev_month.month }}" class="btn-outline-rose" style="padding:8px 14px;"><i class="bi bi-chevron-left"></i></a>
+    <form method="get" class="d-flex gap-2">
+      <select name="month" class="form-select" style="max-width:130px;" onchange="this.form.submit()">
+        <option value="1" {% if month == 1 %}selected{% endif %}>January</option>
+        <option value="2" {% if month == 2 %}selected{% endif %}>February</option>
+        <option value="3" {% if month == 3 %}selected{% endif %}>March</option>
+        <option value="4" {% if month == 4 %}selected{% endif %}>April</option>
+        <option value="5" {% if month == 5 %}selected{% endif %}>May</option>
+        <option value="6" {% if month == 6 %}selected{% endif %}>June</option>
+        <option value="7" {% if month == 7 %}selected{% endif %}>July</option>
+        <option value="8" {% if month == 8 %}selected{% endif %}>August</option>
+        <option value="9" {% if month == 9 %}selected{% endif %}>September</option>
+        <option value="10" {% if month == 10 %}selected{% endif %}>October</option>
+        <option value="11" {% if month == 11 %}selected{% endif %}>November</option>
+        <option value="12" {% if month == 12 %}selected{% endif %}>December</option>
+      </select>
+      <select name="year" class="form-select" style="max-width:100px;" onchange="this.form.submit()">
+        {% for y in year_range %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}
+      </select>
+    </form>
+    <a href="{% url 'monthly_report' %}?year={{ next_month.year }}&month={{ next_month.month }}" class="btn-outline-rose" style="padding:8px 14px;"><i class="bi bi-chevron-right"></i></a>
+  </div>
+</div>
+
+<!-- SUMMARY STAT CARDS -->
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-3"><div class="stat-card card-rose"><div class="card-icon"><i class="bi bi-person-plus"></i></div><div class="stat-value">{{ new_patients }}</div><div class="stat-label">New Patients</div><div class="stat-sub">Registered this month</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card card-purple"><div class="card-icon"><i class="bi bi-heart-pulse"></i></div><div class="stat-value">{{ del_total }}</div><div class="stat-label">Deliveries</div><div class="stat-sub">This month</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card card-green"><div class="card-icon"><i class="bi bi-emoji-smile"></i></div><div class="stat-value">{{ nb_total }}</div><div class="stat-label">Newborns</div><div class="stat-sub">Born this month</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card card-navy"><div class="card-icon"><i class="bi bi-cash-coin"></i></div><div class="stat-value" style="font-size:22px;">₱{{ total_collected|floatformat:0 }}</div><div class="stat-label">Collections</div><div class="stat-sub">This month</div></div></div>
+</div>
+
+<div class="row g-3">
+  <!-- DELIVERIES -->
+  <div class="col-lg-4">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6;"><i class="bi bi-heart-pulse"></i></div><h5>Deliveries by Type</h5></div>
+      <div class="panel-body">
+        {% if del_total %}
+        <canvas id="deliveryChart" height="180"></canvas>
+        <div style="margin-top:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F0F4F8;font-size:13px;">
+          <span style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:50%;background:#10B981;display:inline-block;"></span>NSD</span><strong>{{ del_nsd }}</strong></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F0F4F8;font-size:13px;">
+          <span style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:50%;background:#2ABFBF;display:inline-block;"></span>Assisted</span><strong>{{ del_assisted }}</strong></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F0F4F8;font-size:13px;">
+          <span style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:50%;background:#8B5CF6;display:inline-block;"></span>CS</span><strong>{{ del_cs }}</strong></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:13px;">
+          <span style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:50%;background:#F59E0B;display:inline-block;"></span>Referral</span><strong>{{ del_referral }}</strong></div>
+        </div>
+        {% else %}
+        <div style="text-align:center;color:#94A3B8;padding:32px 0;"><i class="bi bi-heart-pulse" style="font-size:32px;opacity:.3;display:block;margin-bottom:8px;"></i>No deliveries this month</div>
+        {% endif %}
+        {% if complications %}
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F0F4F8;">
+          <div style="font-size:11px;font-weight:700;color:#EF4444;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Complications</div>
+          {% for c in complications %}<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:#64748B;">{{ c.complication_type|title }}</span><strong>{{ c.n }}</strong></div>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Prenatal -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-activity"></i></div><h5>Prenatal Visits</h5></div>
+      <div class="panel-body">
+        {% for label,val in prenatal_stats %}
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;">
+          <span style="color:#64748B;">{{ label }}</span>
+          <strong>{{ val }}</strong>
+        </div>
+        {% empty %}
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#64748B;">Total Visits</span><strong>{{ prenatal_count }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#64748B;">Unique Patients</span><strong>{{ unique_patients_pn }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#EF4444;">High-Risk Visits</span><strong style="color:#EF4444;">{{ high_risk_visits }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px;"><span style="color:#64748B;">Avg Weight (kg)</span><strong>{{ avg_weight|default:"—" }}</strong></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- NEWBORNS + APPOINTMENTS -->
+  <div class="col-lg-4">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-emoji-smile"></i></div><h5>Newborn Summary</h5></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div style="text-align:center;padding:12px;background:#F8FAFB;border-radius:10px;"><div style="font-size:24px;font-weight:800;color:#10B981;">{{ nb_alive }}</div><div style="font-size:11px;color:#94A3B8;">Live Births</div></div>
+          <div style="text-align:center;padding:12px;background:#F8FAFB;border-radius:10px;"><div style="font-size:24px;font-weight:800;color:#EF4444;">{{ nb_stillbirth }}</div><div style="font-size:11px;color:#94A3B8;">Stillbirths</div></div>
+          <div style="text-align:center;padding:12px;background:#F8FAFB;border-radius:10px;"><div style="font-size:24px;font-weight:800;color:#2ABFBF;">{{ nb_male }}</div><div style="font-size:11px;color:#94A3B8;">Male</div></div>
+          <div style="text-align:center;padding:12px;background:#F8FAFB;border-radius:10px;"><div style="font-size:24px;font-weight:800;color:#E8527A;">{{ nb_female }}</div><div style="font-size:11px;color:#94A3B8;">Female</div></div>
+        </div>
+        {% if avg_weight_nb %}<div style="padding:10px;background:rgba(16,185,129,.06);border-radius:8px;text-align:center;font-size:13px;"><span style="color:#64748B;">Avg Birth Weight:</span> <strong>{{ avg_weight_nb|floatformat:0 }}g</strong></div>{% endif %}
+        {% if low_bw %}<div style="margin-top:8px;padding:8px 12px;background:rgba(245,158,11,.08);border-radius:8px;font-size:12px;color:#92400E;"><i class="bi bi-exclamation-triangle me-1"></i><strong>{{ low_bw }}</strong> Low Birth Weight (&lt;2500g)</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-calendar-check"></i></div><h5>Appointments</h5></div>
+      <div class="panel-body">
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#64748B;">Total Scheduled</span><strong>{{ appt_total }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#10B981;">Completed</span><strong style="color:#10B981;">{{ appt_completed }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#F59E0B;">Cancelled</span><strong style="color:#F59E0B;">{{ appt_cancelled }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px;"><span style="color:#EF4444;">No Shows</span><strong style="color:#EF4444;">{{ appt_no_show }}</strong></div>
+        {% if appt_by_type %}
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F0F4F8;">
+          <div style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">By Type</div>
+          {% for t in appt_by_type %}<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:#64748B;">{{ t.appointment_type|title }}</span><strong>{{ t.n }}</strong></div>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- BILLING / COLLECTIONS -->
+  <div class="col-lg-4">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-cash-coin"></i></div><h5>Financial Summary</h5></div>
+      <div class="panel-body">
+        <div style="text-align:center;padding:20px;background:linear-gradient(135deg,rgba(16,185,129,.06),rgba(42,191,191,.06));border-radius:12px;margin-bottom:14px;">
+          <div style="font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;">Total Collections</div>
+          <div style="font-size:36px;font-weight:900;color:#10B981;">₱{{ total_collected|floatformat:2 }}</div>
+          <div style="font-size:12px;color:#64748B;margin-top:4px;">Billed: ₱{{ total_billed|floatformat:2 }}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#10B981;">Paid Bills</span><strong>{{ bills_paid }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#F59E0B;">Partial Bills</span><strong>{{ bills_partial }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px;"><span style="color:#EF4444;">Unpaid Bills</span><strong>{{ bills_unpaid }}</strong></div>
+        {% if payment_by_method %}
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F0F4F8;">
+          <div style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">By Payment Method</div>
+          {% for pm in payment_by_method %}
+          <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;">
+            <span style="color:#64748B;">{{ pm.payment_method|title }}</span>
+            <strong>₱{{ pm.total|floatformat:2 }}</strong>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Patient risk breakdown -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-person-heart"></i></div><h5>Patient Overview</h5></div>
+      <div class="panel-body">
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#64748B;">New This Month</span><strong style="color:#E8527A;">{{ new_patients }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#64748B;">Total Active</span><strong>{{ total_patients }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px;"><span style="color:#EF4444;">High Risk (all)</span><strong style="color:#EF4444;">{{ high_risk_patients }}</strong></div>
+        {% if risk_breakdown %}
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F0F4F8;">
+          {% for r in risk_breakdown %}
+          <div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;">
+            <span style="color:#64748B;">{{ r.risk_level|title }}</span><strong>{{ r.n }}</strong>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+{% if del_total %}
+new Chart(document.getElementById('deliveryChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['NSD', 'Assisted', 'CS', 'Referral', 'In Progress'],
+    datasets: [{
+      data: [{{ del_nsd }}, {{ del_assisted }}, {{ del_cs }}, {{ del_referral }}, {{ del_in_progress }}],
+      backgroundColor: ['#10B981','#2ABFBF','#8B5CF6','#F59E0B','#94A3B8'],
+      borderWidth: 2, borderColor: '#fff'
+    }]
+  },
+  options: {
+    cutout: '65%',
+    plugins: { legend: { display: false } }
+  }
+});
+{% endif %}
+// Month selector with name display
+const monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+document.querySelectorAll('select[name="month"] option').forEach(opt => {
+  if (opt.value) opt.textContent = monthNames[parseInt(opt.value)];
+});
+</script>
+{% endblock %}

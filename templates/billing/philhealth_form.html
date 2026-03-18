@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}New PhilHealth Claim{% endblock %}
+{% block topbar_title %}PhilHealth Claims{% endblock %}
+{% block content %}
+<div class="page-breadcrumb mb-2"><a href="{% url 'philhealth_list' %}">PhilHealth Claims</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>New Claim</span></div>
+<div class="page-header"><div class="page-header-left"><div class="page-title">New PhilHealth Claim</div></div></div>
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-file-medical"></i></div><h5>Claim Details</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-12"><label class="form-label">Patient *</label><select name="patient" class="form-select" required><option value="">Select patient...</option>{% for p in patients %}<option value="{{ p.pk }}">{{ p.full_name }} ({{ p.record_number }})</option>{% endfor %}</select></div>
+          <div class="col-md-6"><label class="form-label">Linked Bill (optional)</label><select name="bill" class="form-select"><option value="">— None —</option>{% for b in bills %}<option value="{{ b.pk }}">{{ b.bill_number }} — ₱{{ b.total_amount|floatformat:2 }}</option>{% endfor %}</select></div>
+          <div class="col-md-6"><label class="form-label">PhilHealth PIN / Member ID</label><input type="text" name="member_pin" class="form-control" placeholder="XX-XXXXXXXXX-X"></div>
+          <div class="col-md-6"><label class="form-label">Case Rate Type *</label>
+            <select name="case_rate_type" class="form-select" id="case-rate-sel" required onchange="setAmount(this)">
+              <option value="">Select...</option>
+              {% for val,label in case_rates %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3"><label class="form-label">Case Rate Amount (₱) *</label><input type="number" name="case_rate_amount" id="case-rate-amount" class="form-control" step="0.01" required></div>
+          <div class="col-md-3"><label class="form-label">Date of Service *</label><input type="date" name="date_of_service" class="form-control" required></div>
+          <div class="col-12"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-body">
+        <div style="background:rgba(42,191,191,.06);border:1px solid rgba(42,191,191,.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:12px;color:#0F766E;">
+          <strong>PhilHealth Case Rates (2024):</strong><br>
+          NSD: ₱6,500 · CS: ₱19,000 · Newborn Care: ₱1,750<br>
+          Premature: ₱8,000 · Prenatal Package Z: ₱2,500
+        </div>
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-check-circle"></i> Create Claim</button>
+        <a href="{% url 'philhealth_list' %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+const rates = {nsd:6500,cs:19000,premature:8000,ectopic:10000,abortion:4000,newborn_care:1750,prenatal:2500};
+function setAmount(sel) {
+  const v = sel.value;
+  const amtInput = document.getElementById('case-rate-amount');
+  if (rates[v]) amtInput.value = rates[v];
+}
+</script>
+{% endblock %}

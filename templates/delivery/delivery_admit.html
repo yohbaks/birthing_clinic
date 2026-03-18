@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Admit Patient{% endblock %}
+{% block topbar_title %}Admit for Labor{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><div class="page-title">Admit Patient for Labor</div></div></div>
+<form method="post">
+{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-heart-pulse"></i></div><h5>Admission Details</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Patient *</label>
+            <select name="patient" class="form-select" required>
+              <option value="">Select Patient</option>
+              {% for p in patients %}<option value="{{ p.pk }}" {% if request.GET.patient == p.pk|stringformat:"i" %}selected{% endif %}>{{ p.full_name }} ({{ p.record_number }})</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Admission Date & Time *</label><input type="datetime-local" name="admission_datetime" class="form-control" required></div>
+          <div class="col-md-6">
+            <label class="form-label">Attending Midwife/Nurse</label>
+            <select name="attending_midwife_select" class="form-select">
+              <option value="">— Current User ({{ request.user.get_full_name }}) —</option>
+              {% for m in midwives %}<option value="{{ m.user.pk }}">{{ m.user.get_full_name }} ({{ m.get_role_display }})</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Attending Physician</label>
+            <select name="attending_doctor" class="form-select">
+              <option value="">— None assigned —</option>
+              {% for d in doctors %}<option value="{{ d.user.pk }}">Dr. {{ d.user.get_full_name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-12"><label class="form-label">Chief Complaint</label><textarea name="chief_complaint" class="form-control" rows="3" placeholder="Reason for admission, e.g. active labor, ruptured membranes..."></textarea></div>
+          <div class="col-12"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-body">
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-heart-pulse"></i> Admit Patient</button>
+        <a href="{% url 'delivery_list' %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

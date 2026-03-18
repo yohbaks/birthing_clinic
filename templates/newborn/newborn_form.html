@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Add Newborn{% endblock %}
+{% block topbar_title %}New Newborn Record{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><div class="page-title">Add Newborn Record</div></div></div>
+<form method="post">
+{% csrf_token %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-emoji-smile"></i></div><h5>Newborn Information</h5></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Mother *</label>
+            <select name="mother" class="form-select" required>
+              <option value="">Select Mother</option>
+              {% for p in patients %}<option value="{{ p.pk }}" {% if request.GET.patient == p.pk|stringformat:"i" %}selected{% endif %}>{{ p.full_name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Delivery Record ID</label><input type="number" name="delivery_record" class="form-control" value="{{ request.GET.delivery }}" placeholder="Delivery record ID" required></div>
+          <div class="col-md-6"><label class="form-label">Baby Name</label><input type="text" name="baby_name" class="form-control" placeholder="Optional"></div>
+          <div class="col-md-3">
+            <label class="form-label">Gender *</label>
+            <select name="gender" class="form-select" required>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="indeterminate">Indeterminate</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Birth Status</label>
+            <select name="birth_status" class="form-select">
+              <option value="alive">Alive</option>
+              <option value="stillbirth">Stillbirth</option>
+              <option value="neonatal_death">Neonatal Death</option>
+            </select>
+          </div>
+          <div class="col-md-6"><label class="form-label">Birth Date &amp; Time *</label><input type="datetime-local" name="birth_datetime" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">Weight (grams) *</label><input type="number" name="weight_grams" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">Length (cm) *</label><input type="number" name="length_cm" step="0.1" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">Head Circ. (cm)</label><input type="number" name="head_circumference" step="0.1" class="form-control"></div>
+          <div class="col-md-3"><label class="form-label">APGAR 1 min</label><input type="number" name="apgar_1min" min="0" max="10" class="form-control"></div>
+          <div class="col-md-3"><label class="form-label">APGAR 5 min</label><input type="number" name="apgar_5min" min="0" max="10" class="form-control"></div>
+          <div class="col-12">
+            <label class="form-label">Initial Interventions</label>
+            <div class="d-flex gap-3 flex-wrap">
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" name="vitamin_k_given"> Vitamin K Given</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" name="eye_prophylaxis_given"> Eye Prophylaxis</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" name="newborn_screening_done"> Newborn Screening</label>
+            </div>
+          </div>
+          <div class="col-12"><label class="form-label">Initial Diagnosis / Notes</label><textarea name="notes" class="form-control" rows="3"></textarea></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-body">
+        <button type="submit" class="btn-rose w-100" style="justify-content:center;padding:12px;"><i class="bi bi-check-circle"></i> Save Newborn Record</button>
+        <a href="{% url 'newborn_list' %}" class="btn-outline-rose w-100 mt-2" style="justify-content:center;">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

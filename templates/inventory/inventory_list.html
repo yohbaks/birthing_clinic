@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Inventory{% endblock %}
+{% block topbar_title %}Inventory Management{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">Inventory</div><div class="page-subtitle">Manage medicines, supplies, and equipment</div></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'stock_in' %}" class="btn-teal"><i class="bi bi-arrow-down-circle"></i> Stock In</a>
+    <a href="?show_inactive=1" class="btn-outline-rose" style="font-size:12px;padding:7px 12px;"><i class="bi bi-archive"></i> Show Inactive</a>
+    <a href="{% url 'item_add' %}" class="btn-rose"><i class="bi bi-plus"></i> Add Item</a>
+  </div>
+</div>
+<div class="panel mb-3">
+  <div class="panel-body" style="padding:14px 20px;">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search items...">
+      </div>
+      <div class="col-md-3">
+        <select name="category" class="form-select">
+          <option value="">All Categories</option>
+          {% for c in categories %}<option value="{{ c.pk }}" {% if cat_filter == c.pk|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><button type="submit" class="btn-rose w-100"><i class="bi bi-search"></i> Filter</button></div>
+      <div class="col-md-1"><a href="{% url 'inventory_list' %}" class="btn-outline-rose" style="padding:9px 12px;">Clear</a></div>
+      <div class="col-md-2 text-end">
+        <a href="{% url 'low_stock' %}" style="font-size:12px;color:#F59E0B;text-decoration:none;font-weight:600;"><i class="bi bi-exclamation-triangle"></i> Low Stock</a>
+        &nbsp;·&nbsp;
+        <a href="{% url 'expiry_report' %}" style="font-size:12px;color:#EF4444;text-decoration:none;font-weight:600;"><i class="bi bi-calendar-x"></i> Expiry</a>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table dt-table mb-0">
+      <thead><tr><th>Item Code</th><th>Name</th><th>Category</th><th>Unit</th><th>On Hand</th><th>Reorder Level</th><th>Selling Price</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for item in items %}
+        <tr {% if item.is_low_stock %}style="background:rgba(245,158,11,.04);"{% endif %}>
+          <td style="font-family:monospace;font-size:12px;color:#2ABFBF;font-weight:700;">{{ item.item_code }}</td>
+          <td style="font-weight:600;">{{ item.name }}</td>
+          <td style="font-size:12px;">{{ item.category.name|default:"—" }}</td>
+          <td>{{ item.get_unit_display }}</td>
+          <td>
+            <span style="font-weight:800;font-size:15px;{% if item.is_out_of_stock %}color:#EF4444;{% elif item.is_low_stock %}color:#F59E0B;{% else %}color:#10B981;{% endif %}">{{ item.quantity_on_hand }}</span>
+          </td>
+          <td style="font-size:12px;color:#64748B;">{{ item.reorder_level }}</td>
+          <td style="font-weight:600;">₱{{ item.selling_price|floatformat:2 }}</td>
+          <td>
+            {% if item.is_out_of_stock %}<span class="status-badge badge-unpaid">OUT OF STOCK</span>
+            {% elif item.is_low_stock %}<span class="status-badge badge-partial">LOW STOCK</span>
+            {% else %}<span class="status-badge badge-completed">OK</span>{% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'item_detail' item.pk %}" class="btn btn-sm btn-light" title="View"><i class="bi bi-eye"></i></a>
+              <a href="{% url 'item_edit' item.pk %}" class="btn btn-sm btn-light" title="Edit"><i class="bi bi-pencil"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="9" class="text-center text-muted py-4">No inventory items found.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

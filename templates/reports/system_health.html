@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}System Health{% endblock %}
+{% block topbar_title %}System Health{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><div class="page-title">System Health Monitor</div><div class="page-subtitle">Database, activity, and configuration overview</div></div>
+  <a href="{% url 'session_monitor' %}" class="btn-outline-rose"><i class="bi bi-people"></i> Session Monitor</a>
+</div>
+
+{% if debug_mode %}
+<div class="alert-clinic alert-warning mb-3" style="background:rgba(245,158,11,.08);border:1.5px solid rgba(245,158,11,.3);color:#92400E;border-radius:10px;padding:12px 18px;">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+  <strong>DEBUG mode is ON.</strong> Set <code>DEBUG = False</code> before deploying to production.
+</div>
+{% endif %}
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="stat-card card-teal"><div class="card-icon"><i class="bi bi-database"></i></div><div class="stat-value">{{ db_size_mb }} MB</div><div class="stat-label">Database Size</div></div></div>
+  <div class="col-md-3"><div class="stat-card card-green"><div class="card-icon"><i class="bi bi-table"></i></div><div class="stat-value">{{ total_records }}</div><div class="stat-label">Total Records</div></div></div>
+  <div class="col-md-3"><div class="stat-card card-rose"><div class="card-icon"><i class="bi bi-shield-x"></i></div><div class="stat-value">{{ failed_logins_24h }}</div><div class="stat-label">Failed Logins (24h)</div></div></div>
+  <div class="col-md-3"><div class="stat-card card-navy"><div class="card-icon"><i class="bi bi-clock-history"></i></div><div class="stat-value">{{ audit_today }}</div><div class="stat-label">Audit Events Today</div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="panel mb-3">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-gear"></i></div><h5>Configuration</h5></div>
+      <div class="panel-body">
+        <table style="width:100%;font-size:13px;">
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="color:#94A3B8;padding:7px 0;width:45%;">Django Version</td><td style="font-weight:700;">{{ django_version }}</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="color:#94A3B8;padding:7px 0;">Python Version</td><td style="font-weight:700;">{{ python_version }}</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="color:#94A3B8;padding:7px 0;">Timezone</td><td style="font-weight:700;">{{ timezone }}</td></tr>
+          <tr style="border-bottom:1px solid #F0F4F8;"><td style="color:#94A3B8;padding:7px 0;">Debug Mode</td><td><span style="font-weight:700;color:{% if debug_mode %}#EF4444{% else %}#10B981{% endif %};">{% if debug_mode %}ON — Not production safe{% else %}OFF ✅{% endif %}</span></td></tr>
+          <tr><td style="color:#94A3B8;padding:7px 0;">Database</td><td style="font-size:11px;font-family:monospace;word-break:break-all;">{{ db_path }}</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(245,158,11,.1);color:#F59E0B;"><i class="bi bi-tools"></i></div><h5>Quick Actions</h5></div>
+      <div class="panel-body">
+        <div class="d-flex flex-column gap-2">
+          <a href="{% url 'session_monitor' %}" class="btn-outline-rose" style="justify-content:flex-start;"><i class="bi bi-people me-2"></i>Session Monitor</a>
+          <a href="{% url 'auditlog_list' %}" class="btn-outline-rose" style="justify-content:flex-start;"><i class="bi bi-shield-check me-2"></i>View Audit Logs</a>
+          <a href="{% url 'export_center' %}" class="btn-outline-rose" style="justify-content:flex-start;"><i class="bi bi-download me-2"></i>Export Data</a>
+          <a href="/admin/" target="_blank" class="btn-outline-rose" style="justify-content:flex-start;"><i class="bi bi-grid me-2"></i>Django Admin</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-icon"><i class="bi bi-bar-chart-steps"></i></div><h5>Record Counts by Module</h5></div>
+      <div>
+        {% for label, count in model_counts %}
+        <div style="padding:11px 18px;border-bottom:1px solid #F0F4F8;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;color:#64748B;">{{ label }}</span>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:120px;background:#F0F4F8;border-radius:4px;height:6px;overflow:hidden;">
+              <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,#E8527A,#2ABFBF);width:{% if total_records %}{% widthratio count total_records 100 %}{% else %}0{% endif %}%;"></div>
+            </div>
+            <span style="font-weight:800;font-size:13px;color:#1A2B4B;min-width:40px;text-align:right;">{{ count }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

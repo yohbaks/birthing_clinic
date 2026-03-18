@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Queue Management{% endblock %}
+{% block topbar_title %}Queue Management{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-title">Patient Queue — {{ today|date:"F j, Y" }}</div>
+    <div class="page-subtitle">Manage today's waiting list</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'queue_display' %}" class="btn-teal" target="_blank"><i class="bi bi-display"></i> Queue Display</a>
+    <a href="{% url 'appointment_list' %}" class="btn-outline-rose"><i class="bi bi-calendar-check"></i> Appointments</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- ADD TO QUEUE -->
+  <div class="col-lg-4">
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(42,191,191,.1);color:#2ABFBF;"><i class="bi bi-person-plus"></i></div>
+        <h5>Add to Queue</h5>
+      </div>
+      <div class="panel-body">
+        <form method="post" action="{% url 'queue_add' %}">{% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Patient *</label>
+            <select name="patient" class="form-select" required>
+              <option value="">Select patient...</option>
+              {% for appt in today_appts %}
+              <option value="{{ appt.patient.pk }}" data-appt="{{ appt.pk }}"
+                {% if appt.patient.pk in queued_ids %}disabled style="color:#94A3B8"{% endif %}>
+                {{ appt.time|time:"h:i A" }} — {{ appt.patient.full_name }}
+                {% if appt.patient.pk in queued_ids %}(already queued){% endif %}
+              </option>
+              {% empty %}
+              <option value="" disabled>No appointments today</option>
+              {% endfor %}
+            </select>
+          </div>
+          <input type="hidden" name="appointment" id="appt-id">
+          <div class="mb-3">
+            <label class="form-label">Or Add Walk-in Patient</label>
+            <select name="patient" class="form-select" id="walkin-select">
+              <option value="">— Walk-in (not scheduled) —</option>
+              {% for p in today_appts %}{% empty %}{% endfor %}
+            </select>
+          </div>
+          <div style="background:#F8FAFB;border-radius:10px;padding:14px;text-align:center;margin-bottom:14px;">
+            <div style="font-size:32px;font-weight:900;color:#2ABFBF;">#{{ next_num }}</div>
+            <div style="font-size:12px;color:#94A3B8;">Next queue number</div>
+          </div>
+          <button type="submit" class="btn-teal w-100" style="justify-content:center;padding:11px;"><i class="bi bi-plus-circle"></i> Add to Queue</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Walk-in add form -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon"><i class="bi bi-person-walking"></i></div>
+        <h5>Walk-in Patient</h5>
+      </div>
+      <div class="panel-body">
+        <form method="post" action="{% url 'queue_add' %}">{% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Select Patient</label>
+            <select name="patient" class="form-select" required>
+              <option value="">Select patient...</option>
+              {% for appt in today_appts %}
+              <option value="{{ appt.patient.pk }}">{{ appt.patient.full_name }} ({{ appt.patient.record_number }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn-outline-rose w-100" style="justify-content:center;"><i class="bi bi-person-plus"></i> Add Walk-in</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUEUE LIST -->
+  <div class="col-lg-8">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:rgba(232,82,122,.1);color:#E8527A;"><i class="bi bi-list-ol"></i></div>
+        <h5>Today's Queue ({{ queue|length }} patients)</h5>
+      </div>
+      <div>
+        {% for entry in queue %}
+        <div class="queue-entry" style="padding:16px 20px;border-bottom:1px solid #F0F4F8;display:flex;align-items:center;gap:16px;
+          {% if entry.status == 'in_progress' %}background:rgba(42,191,191,.06);border-left:4px solid #2ABFBF;{% elif entry.status == 'done' %}opacity:.55;{% elif entry.status == 'skipped' %}opacity:.4;{% endif %}">
+          <!-- Queue number badge -->
+          <div style="width:52px;height:52px;border-radius:14px;
+            {% if entry.status == 'in_progress' %}background:linear-gradient(135deg,#2ABFBF,#1A9494);{% elif entry.status == 'done' %}background:#10B981;{% elif entry.status == 'skipped' %}background:#94A3B8;{% else %}background:linear-gradient(135deg,#E8527A,#C23860);{% endif %}
+            color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;flex-shrink:0;">
+            {{ entry.queue_number }}
+          </div>
+          <!-- Patient info -->
+          <div style="flex:1;">
+            <div style="font-weight:800;font-size:15px;color:#1A2B4B;">{{ entry.patient.full_name }}</div>
+            <div style="font-size:12px;color:#64748B;margin-top:2px;">
+              {{ entry.patient.record_number }}
+              {% if entry.appointment %}· {{ entry.appointment.get_appointment_type_display }} · {{ entry.appointment.time|time:"h:i A" }}{% endif %}
+              {% if entry.called_at %} · Called {{ entry.called_at|time:"h:i A" }}{% endif %}
+              {% if entry.completed_at %} · Done {{ entry.completed_at|time:"h:i A" }}{% endif %}
+            </div>
+          </div>
+          <!-- Status badge -->
+          <div style="flex-shrink:0;">
+            {% if entry.status == 'waiting' %}
+              <span class="status-badge badge-pending">Waiting</span>
+            {% elif entry.status == 'in_progress' %}
+              <span class="status-badge badge-confirmed" style="animation:pulse 2s infinite;">Now Serving</span>
+            {% elif entry.status == 'done' %}
+              <span class="status-badge badge-completed">Done</span>
+            {% elif entry.status == 'skipped' %}
+              <span class="status-badge badge-cancelled">Skipped</span>
+            {% endif %}
+          </div>
+          <!-- Action buttons -->
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            {% if entry.status == 'waiting' %}
+            <form method="post" action="{% url 'queue_update' entry.pk %}">{% csrf_token %}
+              <input type="hidden" name="action" value="call">
+              <button type="submit" class="btn-teal" style="font-size:11px;padding:5px 12px;border:none;cursor:pointer;"><i class="bi bi-megaphone"></i> Call</button>
+            </form>
+            <form method="post" action="{% url 'queue_update' entry.pk %}">{% csrf_token %}
+              <input type="hidden" name="action" value="skip">
+              <button type="submit" style="font-size:11px;padding:5px 10px;background:#F0F4F8;border:none;border-radius:8px;cursor:pointer;color:#64748B;"><i class="bi bi-skip-forward"></i></button>
+            </form>
+            {% elif entry.status == 'in_progress' %}
+            <form method="post" action="{% url 'queue_update' entry.pk %}">{% csrf_token %}
+              <input type="hidden" name="action" value="done">
+              <button type="submit" style="font-size:11px;padding:5px 12px;background:#10B981;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;"><i class="bi bi-check-circle"></i> Done</button>
+            </form>
+            <form method="post" action="{% url 'queue_update' entry.pk %}">{% csrf_token %}
+              <input type="hidden" name="action" value="waiting">
+              <button type="submit" style="font-size:11px;padding:5px 10px;background:#F0F4F8;border:none;border-radius:8px;cursor:pointer;color:#64748B;" title="Return to waiting"><i class="bi bi-arrow-counterclockwise"></i></button>
+            </form>
+            {% elif entry.status == 'skipped' %}
+            <form method="post" action="{% url 'queue_update' entry.pk %}">{% csrf_token %}
+              <input type="hidden" name="action" value="waiting">
+              <button type="submit" style="font-size:11px;padding:5px 12px;background:#E8527A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;"><i class="bi bi-arrow-counterclockwise"></i> Return</button>
+            </form>
+            {% endif %}
+            <a href="{% url 'patient_profile' entry.patient.pk %}" style="font-size:11px;padding:5px 10px;background:#F0F4F8;border-radius:8px;color:#64748B;text-decoration:none;"><i class="bi bi-person"></i></a>
+          </div>
+        </div>
+        {% empty %}
+        <div style="padding:60px;text-align:center;color:#94A3B8;">
+          <i class="bi bi-list-ol" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px;"></i>
+          <div style="font-weight:700;margin-bottom:6px;">Queue is empty</div>
+          <div style="font-size:13px;">Add patients from the panel on the left.</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% if queue %}
+      <div style="padding:14px 20px;border-top:1px solid #F0F4F8;display:flex;justify-content:space-between;font-size:12px;color:#64748B;">
+        <span>Waiting: <strong style="color:#E8527A;">{{ queue|length }}</strong></span>
+        <span>Serving: <strong style="color:#2ABFBF;">{{ queue|length }}</strong></span>
+        <span><a href="{% url 'queue_display' %}" target="_blank" style="color:#64748B;text-decoration:none;"><i class="bi bi-display"></i> Open Display Board</a></span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes pulse {
+  0%,100%{opacity:1} 50%{opacity:.7}
+}
+</style>
+{% endblock %}
