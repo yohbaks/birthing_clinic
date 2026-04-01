@@ -49,7 +49,7 @@
           </td>
           <td><a href="{% url 'philhealth_update' c.pk %}" class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></a></td>
         </tr>
-        {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No PhilHealth claims yet. <a href="{% url 'philhealth_add' %}">Add one</a>.</td></tr>{% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </div>

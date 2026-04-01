@@ -89,8 +89,6 @@
             </div>
           </td>
         </tr>
-        {% empty %}
-        <tr><td colspan="8" class="text-center py-5 text-muted">No patients found. <a href="{% url 'patient_add' %}">Register the first patient</a></td></tr>
         {% endfor %}
       </tbody>
     </table>

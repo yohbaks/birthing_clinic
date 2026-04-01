@@ -22,7 +22,7 @@
             <a href="{% url 'reactivate_patient' p.pk %}" class="btn-teal" style="font-size:11px;padding:5px 12px;"><i class="bi bi-person-check"></i> Reactivate</a>
           </td>
         </tr>
-        {% empty %}<tr><td colspan="6" class="text-center text-muted py-5"><i class="bi bi-check-circle" style="font-size:32px;color:#10B981;display:block;margin-bottom:8px;"></i>No inactive patients</td></tr>{% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </div>

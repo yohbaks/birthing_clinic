@@ -18,7 +18,7 @@
           <td>{{ item.minimum_stock_level }}</td>
           <td><div class="d-flex gap-1"><a href="{% url 'stock_in' %}" class="btn-teal" style="font-size:11px;padding:5px 12px;"><i class="bi bi-arrow-down-circle"></i> Stock In</a><a href="{% url 'item_detail' item.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a></div></td>
         </tr>
-        {% empty %}<tr><td colspan="7" class="text-center text-muted py-5"><i class="bi bi-check-circle" style="font-size:32px;color:#10B981;display:block;margin-bottom:8px;"></i>All items are well-stocked!</td></tr>{% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </div>
