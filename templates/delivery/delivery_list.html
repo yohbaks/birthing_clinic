@@ -21,7 +21,7 @@
           <td>{% if d.delivery_datetime %}<span class="status-badge badge-completed">Delivered</span>{% elif d.referral_hospital %}<span class="status-badge badge-cancelled">Referred</span>{% else %}<span class="status-badge badge-confirmed">In Labor</span>{% endif %}</td>
           <td><a href="{% url 'delivery_detail' d.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a></td>
         </tr>
-        {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No delivery records.</td></tr>{% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </div>

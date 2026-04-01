@@ -27,7 +27,7 @@
           <td style="font-size:12px;">{{ v.follow_up_date|date:"M d, Y"|default:"|" }}</td>
           <td><a href="{% url 'prenatal_detail' v.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a></td>
         </tr>
-        {% empty %}<tr><td colspan="10" class="text-center text-muted py-4">No prenatal visits recorded.</td></tr>{% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </div>
