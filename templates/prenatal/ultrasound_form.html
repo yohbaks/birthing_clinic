@@ -15,7 +15,7 @@
           <div class="col-md-6"><label class="form-label">GA by Ultrasound</label><input type="number" name="ga_by_ultrasound" step="0.1" min="0" class="form-control" placeholder="e.g. 28.3 (weeks)"></div>
           <div class="col-md-6"><label class="form-label">Link to Prenatal Visit</label>
             <select name="visit" class="form-select">
-              <option value="">— None —</option>
+              <option value="">| None |</option>
               {% for v in visits %}<option value="{{ v.pk }}">{{ v.visit_date|date:"M d, Y" }} (GA {{ v.gestational_age_weeks }}w)</option>{% endfor %}
             </select>
           </div>

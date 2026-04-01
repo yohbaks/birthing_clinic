@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Morbidity Report — {{ year }}{% endblock %}
+{% block title %}Morbidity Report | {{ year }}{% endblock %}
 {% block topbar_title %}Morbidity & Mortality Report{% endblock %}
 {% block extra_head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -8,7 +8,7 @@
 <div class="page-header">
   <div class="page-header-left">
     <div class="page-title">Maternal Morbidity & Mortality Report</div>
-    <div class="page-subtitle">{{ year }} — Adverse outcome tracking for DOH reporting</div>
+    <div class="page-subtitle">{{ year }} | Adverse outcome tracking for DOH reporting</div>
   </div>
   <div class="d-flex gap-2">
     <form method="get" class="d-flex gap-2">
@@ -32,7 +32,7 @@
   <!-- Monthly Trend Chart -->
   <div class="col-lg-7">
     <div class="panel">
-      <div class="panel-header"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-graph-up"></i></div><h5>Monthly Deliveries vs Complications — {{ year }}</h5></div>
+      <div class="panel-header"><div class="panel-icon" style="background:rgba(239,68,68,.1);color:#EF4444;"><i class="bi bi-graph-up"></i></div><h5>Monthly Deliveries vs Complications | {{ year }}</h5></div>
       <div class="panel-body"><canvas id="morbidityChart" height="110"></canvas></div>
     </div>
   </div>
@@ -76,7 +76,7 @@
             <tr>
               <td style="font-weight:700;"><a href="{% url 'patient_profile' r.patient.pk %}">{{ r.patient.full_name }}</a></td>
               <td style="font-size:11px;">{{ r.admission_datetime|date:"M d, Y" }}</td>
-              <td style="font-size:11px;color:#EF4444;">{{ r.referral_reason|default:r.maternal_condition|default:"—"|truncatechars:35 }}</td>
+              <td style="font-size:11px;color:#EF4444;">{{ r.referral_reason|default:r.maternal_condition|default:"|"|truncatechars:35 }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -134,12 +134,12 @@
         <tr>
           <td style="font-size:11px;white-space:nowrap;">{{ c.recorded_at|date:"M d, Y" }}</td>
           <td style="font-weight:700;"><a href="{% url 'patient_profile' c.delivery_record.patient.pk %}">{{ c.delivery_record.patient.full_name }}</a></td>
-          <td>{{ c.complication_type|title|default:"—" }}</td>
+          <td>{{ c.complication_type|title|default:"|" }}</td>
           <td>
             {% if c.severity == 'severe' or c.severity == 'critical' %}<span style="font-size:10px;background:rgba(239,68,68,.1);color:#DC2626;padding:2px 8px;border-radius:6px;font-weight:700;">{{ c.severity|upper }}</span>
             {% else %}<span style="font-size:10px;background:rgba(245,158,11,.1);color:#D97706;padding:2px 8px;border-radius:6px;font-weight:700;">{{ c.severity|default:"MOD"|upper }}</span>{% endif %}
           </td>
-          <td style="font-size:12px;color:#64748B;">{{ c.outcome|default:"—"|truncatechars:40 }}</td>
+          <td style="font-size:12px;color:#64748B;">{{ c.outcome|default:"|"|truncatechars:40 }}</td>
         </tr>
         {% endfor %}
       </tbody>

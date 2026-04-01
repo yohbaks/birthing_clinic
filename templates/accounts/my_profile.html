@@ -23,16 +23,16 @@
       <div class="panel-body">
         <table style="width:100%;font-size:13px;">
           <tr><td style="color:#94A3B8;padding:8px 0;width:35%;">Username</td><td style="font-weight:700;font-family:monospace;">{{ request.user.username }}</td></tr>
-          <tr><td style="color:#94A3B8;padding:8px 0;">Full Name</td><td style="font-weight:700;">{{ request.user.get_full_name|default:"—" }}</td></tr>
-          <tr><td style="color:#94A3B8;padding:8px 0;">Email</td><td style="font-weight:700;">{{ request.user.email|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">Full Name</td><td style="font-weight:700;">{{ request.user.get_full_name|default:"|" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">Email</td><td style="font-weight:700;">{{ request.user.email|default:"|" }}</td></tr>
           {% if profile %}
           <tr><td style="color:#94A3B8;padding:8px 0;">Employee ID</td><td style="font-weight:700;font-family:monospace;color:#2ABFBF;">{{ profile.employee_id }}</td></tr>
           <tr><td style="color:#94A3B8;padding:8px 0;">Role</td><td><span style="background:rgba(42,191,191,.1);color:#0F766E;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;">{{ profile.get_role_display }}</span></td></tr>
-          <tr><td style="color:#94A3B8;padding:8px 0;">Phone</td><td style="font-weight:700;">{{ profile.phone|default:"—" }}</td></tr>
-          <tr><td style="color:#94A3B8;padding:8px 0;">License No.</td><td style="font-weight:700;">{{ profile.license_number|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">Phone</td><td style="font-weight:700;">{{ profile.phone|default:"|" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">License No.</td><td style="font-weight:700;">{{ profile.license_number|default:"|" }}</td></tr>
           {% endif %}
           <tr><td style="color:#94A3B8;padding:8px 0;">Date Joined</td><td style="font-weight:700;">{{ request.user.date_joined|date:"F j, Y" }}</td></tr>
-          <tr><td style="color:#94A3B8;padding:8px 0;">Last Login</td><td style="font-weight:700;">{{ request.user.last_login|date:"M d, Y H:i"|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:8px 0;">Last Login</td><td style="font-weight:700;">{{ request.user.last_login|date:"M d, Y H:i"|default:"|" }}</td></tr>
         </table>
       </div>
     </div>

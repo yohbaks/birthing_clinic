@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}{{ action }} Patient — BirthCare{% endblock %}
+{% block title %}{{ action }} Patient | BirthCare{% endblock %}
 {% block topbar_title %}{{ action }} Patient{% endblock %}
 {% block content %}
 <div class="page-header">
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ? '<strong>Possible duplicate:</strong> A patient with this exact name already exists.'
                 : '<strong>Similar patients found:</strong>';
               const list = data.duplicates.map(d =>
-                `<a href="/patients/${d.pk}/" target="_blank" style="display:block;margin-top:4px;color:#92400E;font-weight:700;">${d.full_name} — ${d.record_number} (DOB: ${d.date_of_birth || '—'})</a>`
+                `<a href="/patients/${d.pk}/" target="_blank" style="display:block;margin-top:4px;color:#92400E;font-weight:700;">${d.full_name} | ${d.record_number} (DOB: ${d.date_of_birth || '|'})</a>`
               ).join('');
               dupWarning.innerHTML = `${icon} ${title}${list}<div style="margin-top:6px;font-size:11px;color:#B45309;">Please verify this is a new patient before saving.</div>`;
               dupWarning.style.display = 'block';

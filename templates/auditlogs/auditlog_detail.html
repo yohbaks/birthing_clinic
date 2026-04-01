@@ -26,7 +26,7 @@
           </td></tr>
           <tr><td style="color:#94A3B8;padding:7px 0;">Module</td><td><span style="background:rgba(42,191,191,.1);color:#0F766E;padding:3px 10px;border-radius:6px;font-weight:600;font-size:12px;">{{ log.module }}</span></td></tr>
           <tr><td style="color:#94A3B8;padding:7px 0;">Record ID</td><td style="font-weight:600;font-family:monospace;">{{ log.record_id }}</td></tr>
-          <tr><td style="color:#94A3B8;padding:7px 0;">IP Address</td><td style="font-family:monospace;font-size:12px;">{{ log.ip_address|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:7px 0;">IP Address</td><td style="font-family:monospace;font-size:12px;">{{ log.ip_address|default:"|" }}</td></tr>
           <tr><td style="color:#94A3B8;padding:7px 0;vertical-align:top;">Description</td><td style="font-size:12px;line-height:1.5;">{{ log.description }}</td></tr>
         </table>
       </div>
@@ -101,7 +101,7 @@
     <div class="panel">
       <div class="panel-body" style="text-align:center;padding:48px;color:#94A3B8;">
         <i class="bi bi-shield-check" style="font-size:40px;opacity:.3;display:block;margin-bottom:12px;"></i>
-        <div style="font-weight:700;">{{ log.action|title }} event — no field-level data</div>
+        <div style="font-weight:700;">{{ log.action|title }} event | no field-level data</div>
         <div style="font-size:13px;margin-top:6px;">{{ log.description }}</div>
       </div>
     </div>

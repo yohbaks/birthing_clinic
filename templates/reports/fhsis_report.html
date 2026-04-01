@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}FHSIS Report — {{ month_name }}{% endblock %}
+{% block title %}FHSIS Report | {{ month_name }}{% endblock %}
 {% block topbar_title %}DOH FHSIS Report{% endblock %}
 {% block content %}
 <div class="page-header">
@@ -24,7 +24,7 @@
 
 <div style="background:rgba(42,191,191,.06);border:1.5px solid rgba(42,191,191,.2);border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:12px;color:#0F766E;">
   <i class="bi bi-info-circle me-2"></i>
-  <strong>FHSIS M1 — Maternal Care Report</strong> — Use this report for monthly LGU/DOH submissions. Data covers <strong>{{ first_day|date:"F j" }} – {{ last_day|date:"F j, Y" }}</strong>.
+  <strong>FHSIS M1 | Maternal Care Report</strong> | Use this report for monthly LGU/DOH submissions. Data covers <strong>{{ first_day|date:"F j" }} – {{ last_day|date:"F j, Y" }}</strong>.
 </div>
 
 <div class="row g-3">

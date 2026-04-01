@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Patients — BirthCare{% endblock %}
+{% block title %}Patients | BirthCare{% endblock %}
 {% block topbar_title %}Patient Records{% endblock %}
 {% block content %}
 <div class="page-header">
@@ -75,7 +75,7 @@
           <td style="font-weight:600;">{{ p.age }}</td>
           <td style="font-size:13px;">{{ p.contact_number }}</td>
           <td><span style="font-weight:700;font-size:13px;">G{{ p.gravida }} P{{ p.para }} A{{ p.abortion_history }}</span></td>
-          <td style="font-size:12px;">{% if p.edd %}{{ p.edd|date:"M d, Y" }}{% else %}<span style="color:#CBD5E1;">—</span>{% endif %}</td>
+          <td style="font-size:12px;">{% if p.edd %}{{ p.edd|date:"M d, Y" }}{% else %}<span style="color:#CBD5E1;">|</span>{% endif %}</td>
           <td>
             {% if p.risk_level == 'high' %}<span class="status-badge badge-risk-high">HIGH RISK</span>
             {% elif p.risk_level == 'moderate' %}<span class="status-badge badge-risk-mod">MODERATE</span>

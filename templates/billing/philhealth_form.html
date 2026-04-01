@@ -12,7 +12,7 @@
       <div class="panel-body">
         <div class="row g-3">
           <div class="col-12"><label class="form-label">Patient *</label><select name="patient" class="form-select" required><option value="">Select patient...</option>{% for p in patients %}<option value="{{ p.pk }}">{{ p.full_name }} ({{ p.record_number }})</option>{% endfor %}</select></div>
-          <div class="col-md-6"><label class="form-label">Linked Bill (optional)</label><select name="bill" class="form-select"><option value="">— None —</option>{% for b in bills %}<option value="{{ b.pk }}">{{ b.bill_number }} — ₱{{ b.total_amount|floatformat:2 }}</option>{% endfor %}</select></div>
+          <div class="col-md-6"><label class="form-label">Linked Bill (optional)</label><select name="bill" class="form-select"><option value="">| None |</option>{% for b in bills %}<option value="{{ b.pk }}">{{ b.bill_number }} | ₱{{ b.total_amount|floatformat:2 }}</option>{% endfor %}</select></div>
           <div class="col-md-6"><label class="form-label">PhilHealth PIN / Member ID</label><input type="text" name="member_pin" class="form-control" placeholder="XX-XXXXXXXXX-X"></div>
           <div class="col-md-6"><label class="form-label">Case Rate Type *</label>
             <select name="case_rate_type" class="form-select" id="case-rate-sel" required onchange="setAmount(this)">

@@ -18,9 +18,9 @@
           <td>{{ v.gestational_age_weeks }}w</td>
           <td>{{ v.bp_display }} {% if v.is_bp_high %}<i class="bi bi-exclamation-triangle-fill text-danger"></i>{% endif %}</td>
           <td>{{ v.weight }} kg</td>
-          <td>{{ v.fetal_heart_rate|default:"—" }}</td>
+          <td>{{ v.fetal_heart_rate|default:"|" }}</td>
           <td>{% if v.risk_flag == "high_risk" %}<span class="status-badge badge-risk-high" style="font-size:10px;">High</span>{% else %}<span class="status-badge badge-risk-low" style="font-size:10px;">Normal</span>{% endif %}</td>
-          <td>{{ v.follow_up_date|date:"M d"|default:"—" }}</td>
+          <td>{{ v.follow_up_date|date:"M d"|default:"|" }}</td>
           <td><a href="{% url 'prenatal_detail' v.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a></td>
         </tr>
         {% empty %}<tr><td colspan="9" class="text-center text-muted py-4">No visits recorded.</td></tr>{% endfor %}

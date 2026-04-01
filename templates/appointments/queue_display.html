@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-header">
   <div class="page-header-left">
-    <div class="page-title">Patient Queue — {{ today|date:"F j, Y" }}</div>
+    <div class="page-title">Patient Queue | {{ today|date:"F j, Y" }}</div>
     <div class="page-subtitle">Live waiting list · Auto-refreshes every 15 seconds</div>
   </div>
   <a href="{% url 'queue_manage' %}" class="btn-rose"><i class="bi bi-gear"></i> Manage Queue</a>

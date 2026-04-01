@@ -43,8 +43,8 @@
           <tr><td style="color:#94A3B8;padding:6px 0;">Length</td><td style="font-weight:700;">{{ newborn.length_cm }}cm</td></tr>
           {% if newborn.head_circumference_cm %}<tr><td style="color:#94A3B8;padding:6px 0;">Head Circ.</td><td style="font-weight:700;">{{ newborn.head_circumference_cm }}cm</td></tr>{% endif %}
           {% if newborn.chest_circumference_cm %}<tr><td style="color:#94A3B8;padding:6px 0;">Chest Circ.</td><td style="font-weight:700;">{{ newborn.chest_circumference_cm }}cm</td></tr>{% endif %}
-          <tr><td style="color:#94A3B8;padding:6px 0;">APGAR 1min</td><td style="font-weight:700;{% if newborn.apgar_1min and newborn.apgar_1min < 7 %}color:#F59E0B;{% endif %}">{{ newborn.apgar_1min|default:"—" }}/10</td></tr>
-          <tr><td style="color:#94A3B8;padding:6px 0;">APGAR 5min</td><td style="font-weight:700;{% if newborn.apgar_5min and newborn.apgar_5min < 7 %}color:#EF4444;{% endif %}">{{ newborn.apgar_5min|default:"—" }}/10</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">APGAR 1min</td><td style="font-weight:700;{% if newborn.apgar_1min and newborn.apgar_1min < 7 %}color:#F59E0B;{% endif %}">{{ newborn.apgar_1min|default:"|" }}/10</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">APGAR 5min</td><td style="font-weight:700;{% if newborn.apgar_5min and newborn.apgar_5min < 7 %}color:#EF4444;{% endif %}">{{ newborn.apgar_5min|default:"|" }}/10</td></tr>
         </table>
       </div>
     </div>
@@ -127,8 +127,8 @@
         <select name="vaccine_name" class="form-select" required>
           <option value="">Select vaccine</option>
           <option value="BCG">BCG (Bacillus Calmette-Guérin)</option>
-          <option value="Hepatitis B (birth dose)">Hepatitis B — Birth Dose</option>
-          <option value="Hepatitis B (2nd dose)">Hepatitis B — 2nd Dose</option>
+          <option value="Hepatitis B (birth dose)">Hepatitis B | Birth Dose</option>
+          <option value="Hepatitis B (2nd dose)">Hepatitis B | 2nd Dose</option>
           <option value="Pentavalent (DPT-HepB-Hib)">Pentavalent (DPT-HepB-Hib)</option>
           <option value="OPV">OPV (Oral Polio)</option>
           <option value="IPV">IPV (Inactivated Polio)</option>

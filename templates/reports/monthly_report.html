@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Monthly Report — {{ month_name }}{% endblock %}
+{% block title %}Monthly Report | {{ month_name }}{% endblock %}
 {% block topbar_title %}Monthly Statistical Report{% endblock %}
 {% block extra_head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -86,7 +86,7 @@
         <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#64748B;">Total Visits</span><strong>{{ prenatal_count }}</strong></div>
         <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#64748B;">Unique Patients</span><strong>{{ unique_patients_pn }}</strong></div>
         <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F4F8;font-size:13px;"><span style="color:#EF4444;">High-Risk Visits</span><strong style="color:#EF4444;">{{ high_risk_visits }}</strong></div>
-        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px;"><span style="color:#64748B;">Avg Weight (kg)</span><strong>{{ avg_weight|default:"—" }}</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px;"><span style="color:#64748B;">Avg Weight (kg)</span><strong>{{ avg_weight|default:"|" }}</strong></div>
         {% endfor %}
       </div>
     </div>

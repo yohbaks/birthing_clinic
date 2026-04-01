@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-header">
   <div class="page-header-left">
-    <div class="page-title">Patient Queue — {{ today|date:"F j, Y" }}</div>
+    <div class="page-title">Patient Queue | {{ today|date:"F j, Y" }}</div>
     <div class="page-subtitle">Manage today's waiting list</div>
   </div>
   <div class="d-flex gap-2">
@@ -30,7 +30,7 @@
               {% for appt in today_appts %}
               <option value="{{ appt.patient.pk }}" data-appt="{{ appt.pk }}"
                 {% if appt.patient.pk in queued_ids %}disabled style="color:#94A3B8"{% endif %}>
-                {{ appt.time|time:"h:i A" }} — {{ appt.patient.full_name }}
+                {{ appt.time|time:"h:i A" }} | {{ appt.patient.full_name }}
                 {% if appt.patient.pk in queued_ids %}(already queued){% endif %}
               </option>
               {% empty %}
@@ -42,7 +42,7 @@
           <div class="mb-3">
             <label class="form-label">Or Add Walk-in Patient</label>
             <select name="patient" class="form-select" id="walkin-select">
-              <option value="">— Walk-in (not scheduled) —</option>
+              <option value="">| Walk-in (not scheduled) |</option>
               {% for p in today_appts %}{% empty %}{% endfor %}
             </select>
           </div>

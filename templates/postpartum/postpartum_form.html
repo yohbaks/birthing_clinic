@@ -10,7 +10,7 @@
 <div class="page-header">
   <div class="page-header-left">
     <div class="page-title">{% if visit %}Edit Postpartum Visit{% else %}Record Postpartum Visit{% endif %}</div>
-    {% if visit %}<div class="page-subtitle">{{ visit.patient.full_name }} — {{ visit.get_visit_type_display }}</div>{% endif %}
+    {% if visit %}<div class="page-subtitle">{{ visit.patient.full_name }} | {{ visit.get_visit_type_display }}</div>{% endif %}
   </div>
 </div>
 
@@ -39,7 +39,7 @@
           <div class="col-md-6">
             <label class="form-label">Linked Delivery Record</label>
             <select name="delivery_record" class="form-select" id="delivery-sel">
-              <option value="">— None —</option>
+              <option value="">| None |</option>
               {% for d in deliveries %}
               <option value="{{ d.pk }}" {% if visit and visit.delivery_record_id == d.pk %}selected{% elif delivery_id == d.pk|stringformat:"i" %}selected{% endif %}>
                 {{ d.admission_datetime|date:"M d, Y" }} {% if d.delivery_type %}· {{ d.get_delivery_type_display }}{% endif %}
@@ -109,7 +109,7 @@
       </div>
       <div class="panel-body">
         <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#92400E;">
-          <strong>EPDS Scoring:</strong> Ask the patient to complete the 10-question Edinburgh scale. Total score 0–30. Score ≥10 indicates possible postnatal depression — refer for further assessment.
+          <strong>EPDS Scoring:</strong> Ask the patient to complete the 10-question Edinburgh scale. Total score 0–30. Score ≥10 indicates possible postnatal depression | refer for further assessment.
         </div>
         <div class="row g-3">
           <div class="col-md-4">
@@ -213,11 +213,11 @@ if (epdsInput) {
     const s = parseInt(this.value);
     if (!isNaN(s)) {
       if (s >= 10) {
-        epdsFlag.textContent = '⚠️ Score ≥10 — Possible postnatal depression. Refer for assessment.';
+        epdsFlag.textContent = '⚠️ Score ≥10 | Possible postnatal depression. Refer for assessment.';
         epdsFlag.style.color = '#EF4444';
         this.style.borderColor = '#EF4444';
       } else {
-        epdsFlag.textContent = '✓ Score < 10 — Low risk';
+        epdsFlag.textContent = '✓ Score < 10 | Low risk';
         epdsFlag.style.color = '#10B981';
         this.style.borderColor = '#10B981';
       }

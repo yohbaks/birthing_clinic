@@ -9,7 +9,7 @@
   <div class="table-responsive">
     <table class="table mb-0" style="font-size:13px;">
       <thead><tr><th>Item</th><th>Batch</th><th>Expiry Date</th><th>Quantity</th></tr></thead>
-      <tbody>{% for b in expired %}<tr style="background:rgba(239,68,68,.04);"><td style="font-weight:600;">{{ b.item.name }}</td><td>{{ b.batch_number|default:"—" }}</td><td style="color:#EF4444;font-weight:700;">{{ b.expiry_date|date:"M d, Y" }}</td><td>{{ b.quantity }}</td></tr>{% endfor %}</tbody>
+      <tbody>{% for b in expired %}<tr style="background:rgba(239,68,68,.04);"><td style="font-weight:600;">{{ b.item.name }}</td><td>{{ b.batch_number|default:"|" }}</td><td style="color:#EF4444;font-weight:700;">{{ b.expiry_date|date:"M d, Y" }}</td><td>{{ b.quantity }}</td></tr>{% endfor %}</tbody>
     </table>
   </div>
 </div>
@@ -19,7 +19,7 @@
   <div class="table-responsive">
     <table class="table dt-table mb-0" style="font-size:13px;">
       <thead><tr><th>Item</th><th>Category</th><th>Batch</th><th>Expiry Date</th><th>Quantity</th></tr></thead>
-      <tbody>{% for b in near_expiry %}<tr><td style="font-weight:600;">{{ b.item.name }}</td><td>{{ b.item.category.name|default:"—" }}</td><td>{{ b.batch_number|default:"—" }}</td><td style="color:#F59E0B;font-weight:700;">{{ b.expiry_date|date:"M d, Y" }}</td><td>{{ b.quantity }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No near-expiry items</td></tr>{% endfor %}</tbody>
+      <tbody>{% for b in near_expiry %}<tr><td style="font-weight:600;">{{ b.item.name }}</td><td>{{ b.item.category.name|default:"|" }}</td><td>{{ b.batch_number|default:"|" }}</td><td style="color:#F59E0B;font-weight:700;">{{ b.expiry_date|date:"M d, Y" }}</td><td>{{ b.quantity }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No near-expiry items</td></tr>{% endfor %}</tbody>
     </table>
   </div>
 </div>

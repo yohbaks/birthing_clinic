@@ -3,7 +3,7 @@
 {% block topbar_title %}Audit Trail{% endblock %}
 {% block content %}
 <div class="page-header">
-  <div class="page-header-left"><div class="page-title">Audit Trail</div><div class="page-subtitle">All system activity logs — showing up to 500 records</div></div>
+  <div class="page-header-left"><div class="page-title">Audit Trail</div><div class="page-subtitle">All system activity logs | showing up to 500 records</div></div>
 </div>
 <!-- FILTER BAR -->
 <div class="panel mb-3">
@@ -55,7 +55,7 @@
           <td><span style="font-size:11px;background:rgba(42,191,191,.1);color:#0F766E;padding:2px 8px;border-radius:6px;font-weight:600;">{{ log.module }}</span></td>
           <td style="font-family:monospace;font-size:11px;color:#64748B;">{{ log.record_id }}</td>
           <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#475569;">{{ log.description }}</td>
-          <td style="font-family:monospace;font-size:11px;color:#94A3B8;">{{ log.ip_address|default:"—" }}</td>
+          <td style="font-family:monospace;font-size:11px;color:#94A3B8;">{{ log.ip_address|default:"|" }}</td>
           <td>{% if log.action == "update" %}<a href="{% url 'auditlog_detail' log.pk %}" class="btn btn-sm btn-light" title="View diff"><i class="bi bi-eye"></i></a>{% endif %}</td>
         </tr>
         {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No audit logs found.</td></tr>{% endfor %}

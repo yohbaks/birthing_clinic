@@ -3,7 +3,7 @@
 {% block topbar_title %}Update PhilHealth Claim{% endblock %}
 {% block content %}
 <div class="page-breadcrumb mb-2"><a href="{% url 'philhealth_list' %}">PhilHealth Claims</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>Update</span></div>
-<div class="page-header"><div class="page-header-left"><div class="page-title">Update Claim — {{ claim.patient.full_name }}</div><div class="page-subtitle">{{ claim.get_case_rate_type_display }} · ₱{{ claim.case_rate_amount|floatformat:2 }}</div></div></div>
+<div class="page-header"><div class="page-header-left"><div class="page-title">Update Claim | {{ claim.patient.full_name }}</div><div class="page-subtitle">{{ claim.get_case_rate_type_display }} · ₱{{ claim.case_rate_amount|floatformat:2 }}</div></div></div>
 <div class="row g-3">
   <div class="col-lg-6">
     <div class="panel">
@@ -34,12 +34,12 @@
       <div class="panel-body">
         <table style="width:100%;font-size:13px;">
           <tr><td style="color:#94A3B8;padding:6px 0;width:40%;">Patient</td><td style="font-weight:700;">{{ claim.patient.full_name }}</td></tr>
-          <tr><td style="color:#94A3B8;padding:6px 0;">PhilHealth PIN</td><td>{{ claim.member_pin|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">PhilHealth PIN</td><td>{{ claim.member_pin|default:"|" }}</td></tr>
           <tr><td style="color:#94A3B8;padding:6px 0;">Case Rate</td><td style="font-weight:700;">{{ claim.get_case_rate_type_display }}</td></tr>
           <tr><td style="color:#94A3B8;padding:6px 0;">Case Rate Amount</td><td style="font-weight:700;color:#E8527A;">₱{{ claim.case_rate_amount|floatformat:2 }}</td></tr>
           <tr><td style="color:#94A3B8;padding:6px 0;">Date of Service</td><td>{{ claim.date_of_service|date:"M d, Y" }}</td></tr>
           {% if claim.bill %}<tr><td style="color:#94A3B8;padding:6px 0;">Linked Bill</td><td><a href="{% url 'bill_detail' claim.bill.pk %}">{{ claim.bill.bill_number }}</a></td></tr>{% endif %}
-          <tr><td style="color:#94A3B8;padding:6px 0;">Patient Share</td><td style="font-weight:700;">{% if claim.bill %}₱{{ claim.patient_share|floatformat:2 }}{% else %}—{% endif %}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">Patient Share</td><td style="font-weight:700;">{% if claim.bill %}₱{{ claim.patient_share|floatformat:2 }}{% else %}|{% endif %}</td></tr>
         </table>
       </div>
     </div>

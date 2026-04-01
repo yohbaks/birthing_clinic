@@ -27,7 +27,7 @@
   {% if delivery.delivery_datetime %}
   <div style="text-align:center;">
     <div style="color:rgba(255,255,255,.5);font-size:11px;">Delivery</div>
-    <div style="font-weight:700;color:#2ABFBF;">{{ delivery.get_delivery_type_display|default:"—" }}</div>
+    <div style="font-weight:700;color:#2ABFBF;">{{ delivery.get_delivery_type_display|default:"|" }}</div>
     <div style="font-size:12px;color:rgba(255,255,255,.5);">{{ delivery.delivery_datetime|date:"M d, Y H:i" }}</div>
   </div>
   {% endif %}
@@ -56,7 +56,7 @@
           <div class="col-md-8"><label class="form-label">Discount Reason</label><input type="text" name="discount_reason" class="form-control" placeholder="PhilHealth, Indigent, Staff benefit..."></div>
           <div class="col-12"><label class="form-label">Notes</label><textarea name="notes" class="form-control" rows="2" placeholder="Additional billing notes..."></textarea></div>
         </div>
-        <div class="form-section-title">Bill Items — Edit prices for your clinic's rates</div>
+        <div class="form-section-title">Bill Items | Edit prices for your clinic's rates</div>
         <div id="bill-items">
           {% for item in preset_items %}
           <div class="item-row">

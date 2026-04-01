@@ -19,7 +19,7 @@
             <tr>
               <td style="font-weight:600;">{{ pi.inventory_item.name }}<br><span style="font-size:11px;color:#94A3B8;font-family:monospace;">{{ pi.inventory_item.item_code }}</span></td>
               <td style="font-weight:700;">{{ pi.quantity_ordered }} {{ pi.inventory_item.get_unit_display }}</td>
-              <td>{% if pi.quantity_received %}{{ pi.quantity_received }}{% else %}<span style="color:#94A3B8;">—</span>{% endif %}</td>
+              <td>{% if pi.quantity_received %}{{ pi.quantity_received }}{% else %}<span style="color:#94A3B8;">|</span>{% endif %}</td>
               <td>₱{{ pi.unit_cost }}</td>
               <td style="font-weight:700;">₱{{ pi.quantity_ordered|floatformat:0 }}×₱{{ pi.unit_cost }} = <strong>₱{% widthratio pi.unit_cost 1 pi.quantity_ordered %}</strong></td>
             </tr>
@@ -38,9 +38,9 @@
           <tr><td style="color:#94A3B8;padding:6px 0;">PO Number</td><td style="font-weight:700;font-family:monospace;color:#2ABFBF;">{{ po.po_number }}</td></tr>
           <tr><td style="color:#94A3B8;padding:6px 0;">Supplier</td><td style="font-weight:700;">{{ po.supplier.name }}</td></tr>
           <tr><td style="color:#94A3B8;padding:6px 0;">Order Date</td><td style="font-weight:700;">{{ po.order_date|date:"M d, Y" }}</td></tr>
-          <tr><td style="color:#94A3B8;padding:6px 0;">Expected</td><td style="font-weight:700;">{{ po.expected_delivery|date:"M d, Y"|default:"—" }}</td></tr>
-          <tr><td style="color:#94A3B8;padding:6px 0;">Received</td><td style="font-weight:700;">{{ po.received_date|date:"M d, Y"|default:"—" }}</td></tr>
-          <tr><td style="color:#94A3B8;padding:6px 0;">Created By</td><td style="font-weight:700;">{{ po.created_by.get_full_name|default:"—" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">Expected</td><td style="font-weight:700;">{{ po.expected_delivery|date:"M d, Y"|default:"|" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">Received</td><td style="font-weight:700;">{{ po.received_date|date:"M d, Y"|default:"|" }}</td></tr>
+          <tr><td style="color:#94A3B8;padding:6px 0;">Created By</td><td style="font-weight:700;">{{ po.created_by.get_full_name|default:"|" }}</td></tr>
           <tr><td style="color:#94A3B8;padding:6px 0;">Status</td><td>{% if po.status == "received" %}<span class="status-badge badge-completed">Received</span>{% elif po.status == "ordered" %}<span class="status-badge badge-confirmed">Ordered</span>{% else %}<span class="status-badge badge-pending">Draft</span>{% endif %}</td></tr>
         </table>
         {% if po.notes %}<div style="margin-top:12px;padding:10px;background:#F8FAFB;border-radius:8px;font-size:12px;color:#64748B;">{{ po.notes }}</div>{% endif %}

@@ -3,7 +3,7 @@
 {% block topbar_title %}Receive Purchase Order{% endblock %}
 {% block content %}
 <div class="page-breadcrumb mb-2"><a href="{% url 'po_list' %}">Purchase Orders</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><a href="{% url 'po_detail' po.pk %}">{{ po.po_number }}</a><i class="bi bi-chevron-right" style="font-size:10px;margin:0 6px;"></i><span>Receive</span></div>
-<div class="page-header"><div class="page-header-left"><div class="page-title">Receive Items — {{ po.po_number }}</div><div class="page-subtitle">{{ po.supplier.name }} · Ordered {{ po.order_date|date:"M d, Y" }}</div></div></div>
+<div class="page-header"><div class="page-header-left"><div class="page-title">Receive Items | {{ po.po_number }}</div><div class="page-subtitle">{{ po.supplier.name }} · Ordered {{ po.order_date|date:"M d, Y" }}</div></div></div>
 <form method="post">{% csrf_token %}
 <div class="panel mb-3">
   <div class="panel-header"><div class="panel-icon" style="background:rgba(16,185,129,.1);color:#10B981;"><i class="bi bi-box-arrow-in-down"></i></div><h5>Receiving Items</h5></div>

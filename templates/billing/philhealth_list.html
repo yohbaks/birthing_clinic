@@ -36,9 +36,9 @@
           <td><div style="font-weight:700;">{{ c.patient.full_name }}</div><div style="font-size:11px;color:#94A3B8;">{{ c.patient.record_number }}</div></td>
           <td style="font-size:12px;">{{ c.get_case_rate_type_display }}</td>
           <td>{{ c.date_of_service|date:"M d, Y" }}</td>
-          <td style="font-family:monospace;font-size:11px;">{{ c.claim_number|default:"—" }}</td>
+          <td style="font-family:monospace;font-size:11px;">{{ c.claim_number|default:"|" }}</td>
           <td style="font-weight:700;">₱{{ c.case_rate_amount|floatformat:2 }}</td>
-          <td style="color:#10B981;font-weight:600;">{% if c.amount_reimbursed %}₱{{ c.amount_reimbursed|floatformat:2 }}{% else %}—{% endif %}</td>
+          <td style="color:#10B981;font-weight:600;">{% if c.amount_reimbursed %}₱{{ c.amount_reimbursed|floatformat:2 }}{% else %}|{% endif %}</td>
           <td>
             {% if c.status == "pending" %}<span class="status-badge badge-pending" style="font-size:10px;">Pending</span>
             {% elif c.status == "submitted" %}<span class="status-badge badge-confirmed" style="font-size:10px;">Submitted</span>

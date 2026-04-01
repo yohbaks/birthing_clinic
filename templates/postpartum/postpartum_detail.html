@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Postpartum — {{ visit.patient.full_name }}{% endblock %}
+{% block title %}Postpartum | {{ visit.patient.full_name }}{% endblock %}
 {% block topbar_title %}Postpartum Visit{% endblock %}
 {% block content %}
 <div class="page-breadcrumb mb-2">
@@ -9,7 +9,7 @@
 </div>
 <div class="page-header">
   <div class="page-header-left">
-    <div class="page-title">{{ visit.get_visit_type_display }} — {{ visit.visit_date|date:"F j, Y" }}</div>
+    <div class="page-title">{{ visit.get_visit_type_display }} | {{ visit.visit_date|date:"F j, Y" }}</div>
     <div class="page-subtitle">{{ visit.patient.full_name }} · {{ visit.patient.record_number }}{% if visit.days_postpartum %} · Day {{ visit.days_postpartum }} postpartum{% endif %}</div>
   </div>
   <div class="d-flex gap-2">
@@ -22,7 +22,7 @@
 <div style="background:rgba(239,68,68,.08);border:2px solid rgba(239,68,68,.3);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
   <div style="font-size:32px;">⚠️</div>
   <div>
-    <div style="font-weight:800;color:#DC2626;font-size:15px;">Postnatal Depression Risk — EPDS Score: {{ visit.mood_score }}/30</div>
+    <div style="font-weight:800;color:#DC2626;font-size:15px;">Postnatal Depression Risk | EPDS Score: {{ visit.mood_score }}/30</div>
     <div style="font-size:13px;color:#7F1D1D;margin-top:2px;">Score ≥10 indicates possible postnatal depression. Patient should be referred for psychological assessment and support.</div>
   </div>
 </div>
@@ -43,8 +43,8 @@
           </div>
           {% empty %}
           <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:900;color:#1A2B4B;">{{ visit.bp_display }}</div><div style="font-size:11px;color:#94A3B8;">Blood Pressure</div></div>
-          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:900;color:#1A2B4B;">{{ visit.temperature|default:"—" }}{% if visit.temperature %}°C{% endif %}</div><div style="font-size:11px;color:#94A3B8;">Temperature</div></div>
-          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:900;color:#1A2B4B;">{{ visit.weight|default:"—" }}{% if visit.weight %} kg{% endif %}</div><div style="font-size:11px;color:#94A3B8;">Weight</div></div>
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:900;color:#1A2B4B;">{{ visit.temperature|default:"|" }}{% if visit.temperature %}°C{% endif %}</div><div style="font-size:11px;color:#94A3B8;">Temperature</div></div>
+          <div style="text-align:center;padding:14px;background:#F8FAFB;border-radius:10px;"><div style="font-size:22px;font-weight:900;color:#1A2B4B;">{{ visit.weight|default:"|" }}{% if visit.weight %} kg{% endif %}</div><div style="font-size:11px;color:#94A3B8;">Weight</div></div>
           {% endfor %}
         </div>
       </div>
@@ -92,7 +92,7 @@
             {% if visit.mood_score is not None %}
             <div style="text-align:center;margin-bottom:12px;">
               <div style="font-size:36px;font-weight:900;color:{% if visit.is_depression_risk %}#EF4444{% else %}#10B981{% endif %};">{{ visit.mood_score }}<span style="font-size:16px;color:#94A3B8;">/30</span></div>
-              <div style="font-size:12px;font-weight:700;color:{% if visit.is_depression_risk %}#EF4444{% else %}#10B981{% endif %};">{% if visit.is_depression_risk %}Possible Depression — Refer{% else %}Low Risk{% endif %}</div>
+              <div style="font-size:12px;font-weight:700;color:{% if visit.is_depression_risk %}#EF4444{% else %}#10B981{% endif %};">{% if visit.is_depression_risk %}Possible Depression | Refer{% else %}Low Risk{% endif %}</div>
             </div>
             {% else %}
             <div style="text-align:center;color:#94A3B8;font-size:13px;">EPDS not administered</div>

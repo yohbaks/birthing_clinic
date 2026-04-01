@@ -15,7 +15,7 @@
             <label class="form-label">Item *</label>
             <select name="item" class="form-select" required>
               <option value="">Select Item</option>
-              {% for i in items %}<option value="{{ i.pk }}">{{ i.name }} ({{ i.item_code }}) — {{ i.quantity_on_hand }} {{ i.get_unit_display }}</option>{% endfor %}
+              {% for i in items %}<option value="{{ i.pk }}">{{ i.name }} ({{ i.item_code }}) | {{ i.quantity_on_hand }} {{ i.get_unit_display }}</option>{% endfor %}
             </select>
           </div>
           <div class="col-md-6"><label class="form-label">Quantity *</label><input type="number" name="quantity" step="0.01" class="form-control" required min="0.01"></div>

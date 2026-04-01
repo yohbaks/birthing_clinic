@@ -41,7 +41,7 @@
         <tr {% if item.is_low_stock %}style="background:rgba(245,158,11,.04);"{% endif %}>
           <td style="font-family:monospace;font-size:12px;color:#2ABFBF;font-weight:700;">{{ item.item_code }}</td>
           <td style="font-weight:600;">{{ item.name }}</td>
-          <td style="font-size:12px;">{{ item.category.name|default:"—" }}</td>
+          <td style="font-size:12px;">{{ item.category.name|default:"|" }}</td>
           <td>{{ item.get_unit_display }}</td>
           <td>
             <span style="font-weight:800;font-size:15px;{% if item.is_out_of_stock %}color:#EF4444;{% elif item.is_low_stock %}color:#F59E0B;{% else %}color:#10B981;{% endif %}">{{ item.quantity_on_hand }}</span>

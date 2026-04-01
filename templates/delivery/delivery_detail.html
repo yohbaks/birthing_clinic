@@ -18,7 +18,7 @@
 </div>
 
 {% if delivery.patient.risk_level == "high" %}
-<div class="high-risk-banner"><i class="bi bi-exclamation-triangle-fill fs-5"></i><div><strong>HIGH RISK PATIENT</strong> — Extra monitoring required. {{ delivery.patient.full_name }}</div></div>
+<div class="high-risk-banner"><i class="bi bi-exclamation-triangle-fill fs-5"></i><div><strong>HIGH RISK PATIENT</strong> | Extra monitoring required. {{ delivery.patient.full_name }}</div></div>
 {% endif %}
 
 <div class="row g-3">
@@ -31,7 +31,7 @@
           <div class="row g-3">
             <div class="col-12"><label class="form-label">Delivery Type</label>
               <select name="delivery_type" class="form-select">
-                <option value="">— In Progress —</option>
+                <option value="">| In Progress |</option>
                 <option value="nsd" {% if delivery.delivery_type == "nsd" %}selected{% endif %}>Normal Spontaneous Delivery</option>
                 <option value="assisted" {% if delivery.delivery_type == "assisted" %}selected{% endif %}>Assisted Delivery</option>
                 <option value="cs" {% if delivery.delivery_type == "cs" %}selected{% endif %}>Cesarean Section</option>
@@ -40,7 +40,7 @@
             </div>
             <div class="col-md-6"><label class="form-label">Presentation</label>
               <select name="presentation" class="form-select">
-                <option value="">—</option>
+                <option value="">|</option>
                 <option value="cephalic" {% if delivery.presentation == "cephalic" %}selected{% endif %}>Cephalic</option>
                 <option value="breech" {% if delivery.presentation == "breech" %}selected{% endif %}>Breech</option>
                 <option value="transverse" {% if delivery.presentation == "transverse" %}selected{% endif %}>Transverse</option>
@@ -60,14 +60,14 @@
             <div class="col-md-6">
               <label class="form-label">Attending Midwife</label>
               <select name="attending_midwife_select" class="form-select">
-                <option value="">— Unchanged —</option>
+                <option value="">| Unchanged |</option>
                 {% for m in midwives %}<option value="{{ m.user.pk }}" {% if delivery.attending_midwife_id == m.user.pk %}selected{% endif %}>{{ m.user.get_full_name }} ({{ m.get_role_display }})</option>{% endfor %}
               </select>
             </div>
             <div class="col-md-6">
               <label class="form-label">Attending Physician</label>
               <select name="attending_doctor" class="form-select">
-                <option value="">— None —</option>
+                <option value="">| None |</option>
                 {% for d in doctors %}<option value="{{ d.user.pk }}" {% if delivery.attending_doctor_id == d.user.pk %}selected{% endif %}>Dr. {{ d.user.get_full_name }}</option>{% endfor %}
               </select>
             </div>
@@ -112,10 +112,10 @@
             {% for m in monitoring|slice:":8" %}
             <tr>
               <td style="font-weight:700;white-space:nowrap;">{{ m.recorded_at|date:"M d H:i" }}</td>
-              <td>{{ m.contraction_frequency|default:"—" }}</td>
-              <td style="font-weight:700;{% if m.fetal_heart_rate and m.fetal_heart_rate < 110 or m.fetal_heart_rate and m.fetal_heart_rate > 160 %}color:#EF4444;{% endif %}">{{ m.fetal_heart_rate|default:"—" }}</td>
-              <td style="font-weight:700;">{% if m.cervical_dilation %}{{ m.cervical_dilation }} cm{% else %}—{% endif %}</td>
-              <td>{% if m.maternal_bp_systolic %}{{ m.maternal_bp_systolic }}/{{ m.maternal_bp_diastolic }}{% else %}—{% endif %}</td>
+              <td>{{ m.contraction_frequency|default:"|" }}</td>
+              <td style="font-weight:700;{% if m.fetal_heart_rate and m.fetal_heart_rate < 110 or m.fetal_heart_rate and m.fetal_heart_rate > 160 %}color:#EF4444;{% endif %}">{{ m.fetal_heart_rate|default:"|" }}</td>
+              <td style="font-weight:700;">{% if m.cervical_dilation %}{{ m.cervical_dilation }} cm{% else %}|{% endif %}</td>
+              <td>{% if m.maternal_bp_systolic %}{{ m.maternal_bp_systolic }}/{{ m.maternal_bp_diastolic }}{% else %}|{% endif %}</td>
               <td>{{ m.get_membrane_status_display }}</td>
             </tr>
             {% empty %}<tr><td colspan="6" class="text-muted text-center py-3">No monitoring entries yet</td></tr>{% endfor %}

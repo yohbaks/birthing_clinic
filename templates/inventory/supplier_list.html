@@ -11,9 +11,9 @@
         {% for s in suppliers %}
         <tr>
           <td style="font-weight:700;">{{ s.name }}</td>
-          <td>{{ s.contact_person|default:"—" }}</td>
-          <td>{{ s.phone|default:"—" }}</td>
-          <td>{{ s.email|default:"—" }}</td>
+          <td>{{ s.contact_person|default:"|" }}</td>
+          <td>{{ s.phone|default:"|" }}</td>
+          <td>{{ s.email|default:"|" }}</td>
           <td>{% if s.is_active %}<span class="status-badge badge-completed">Active</span>{% else %}<span class="status-badge badge-cancelled">Inactive</span>{% endif %}</td>
           <td><div class="d-flex gap-1"><a href="{% url 'supplier_detail' s.pk %}" class="btn btn-sm btn-light"><i class="bi bi-eye"></i></a><a href="{% url 'supplier_edit' s.pk %}" class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></a></div></td>
         </tr>
