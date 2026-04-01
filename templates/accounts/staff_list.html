@@ -17,7 +17,7 @@
               <form method="post" action="{% url 'staff_reactivate' s.pk %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn btn-sm btn-light text-success" title="Reactivate"><i class="bi bi-person-check"></i></button></form>
               {% endif %}
             </div>
-          </td></tr>{% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No staff accounts found</td></tr>{% endfor %}</tbody>
+          </td></tr>{% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No staff accounts found</td></tr>{% endfor %}</tbody>
     </table>
   </div>
 </div>
