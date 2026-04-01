@@ -3,6 +3,9 @@
 # Core framework
 Django>=6.0
 
+# Production WSGI server
+gunicorn>=21.0
+
 # Image handling (staff profile photos, media uploads)
 Pillow>=10.0
 
