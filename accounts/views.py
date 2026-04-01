@@ -18,7 +18,10 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
 
-    ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
+    ip = (request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
+          or request.META.get('HTTP_X_REAL_IP', '')
+          or request.META.get('REMOTE_ADDR', '')
+          or '127.0.0.1')
     lockout_since = timezone.now() - timedelta(minutes=LOCKOUT_MINUTES)
     recent_fails  = LoginAttempt.objects.filter(
         ip_address=ip, success=False, attempted_at__gte=lockout_since
