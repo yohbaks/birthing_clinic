@@ -1,7 +1,7 @@
 # BirthCare Clinic Management System — Python Dependencies
 
 # Core framework
-Django>=6.0
+Django>=5.2,<6.0
 
 # Production WSGI server
 gunicorn>=21.0
