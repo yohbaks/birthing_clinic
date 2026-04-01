@@ -6,6 +6,9 @@ Django>=5.2,<6.0
 # Production WSGI server
 gunicorn>=21.0
 
+# Local dev: load .env file
+python-dotenv>=1.0
+
 # Image handling (staff profile photos, media uploads)
 Pillow>=10.0
 
